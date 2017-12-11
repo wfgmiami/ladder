@@ -1,0 +1,78 @@
+* {
+  box-sizing: border-box;
+  padding: 0px;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	-moz-appearance: node;
+	appearance: none;
+	margin: 0;
+}
+
+table {
+	table-layout:fixed;
+	width: 100%;
+	border-collapse: separate;
+	border-right: 1px solid #cecfd5;
+	border-spacing: 0;
+	color: #4a4a4d;
+	font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.company{
+	width:30%;
+}
+
+.investMethod{
+	width:48%;
+}
+
+.alloc{
+	width:22%;
+}
+
+th {
+	border-right: 1px solid #fff;
+}
+
+th,
+td {
+	padding: 5px 5px;
+	vertical-align: middle;
+}
+
+thead {
+	background: #395870;
+	color: #fff;
+	font-size: 14px;
+}
+
+td {
+
+	border-bottom: 1px solid #cecfd5;
+	border-right: 1px solid #cecfd5;
+}
+
+td:first-child {
+	border-left: 1px solid #cecfd5;
+}
+
+.item {
+	text-align: left;
+}
+
+tfoot {
+	text-align: center;
+}
+
+tfoot tr:last-child {
+	background: #f0f0f2;
+	color: #395870;
+	font-weight: bold;
+}
+
+#tdTotal {
+	text-align: right;
+}
