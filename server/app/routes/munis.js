@@ -3,11 +3,11 @@ const router = new express.Router();
 
 const yahooFinance = require('yahoo-finance');
 const dateFormat = require('dateformat');
-const transactionData = require( '../../../trans.json');
+const muniData = require( '../../../muniData.json');
 module.exports = router;
 
 router.get('/', (req, res, next) => {
-	res.send( createNewObject( transactionData.transactions ));
+	res.send( createNewObject( muniData ));
 })
 
 
@@ -40,16 +40,17 @@ router.get('/nasdaq/search', (req, res, next) => {
 
 createNewObject = ( arr ) => {
 	let obj = {};
-	let transactions = [];
+	let munis = [];
 
-	arr.forEach( transaction => {
-		obj.amount = transaction.amount;
-		obj.category = transaction.category;
-		obj.name = transaction.name;
-		obj.purchaseDate = transaction.date;
-		transactions.push(obj)
+	arr.forEach( muni => {
+		obj.cusip = muni.CUSIP;
+		obj.coupon = muni.Coupon;
+		obj.maturity = muni['Stated Maturity'];
+		obj.sector = muni['Holdings Sector'];
+		obj.rating = muni['Opinion Internal Rating'];
+		munis.push(obj)
 		obj= {};
 	})
-	return transactions;
+	return munis;
 }
 

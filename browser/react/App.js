@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Nav from './Nav';
-import BondList from './BondList';
+import MuniList from './MuniList';
 import Maturity from './Maturity';
 import initialState from './initialState';
 import PortWeight from './PortWeight';
@@ -13,27 +13,26 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = initialState;
-	this.selectAllocationPercent = this.selectAllocationPercent.bind(this);
+    this.state = {
+		munis:[]
+	};
   }
 
 
 
   componentDidMount() {
-    axios.get('/api/transactions')
+    axios.get('/api/munis')
       .then(response => response.data)
-      .then(transactions => this.setState({ transactions }))
+      .then( munis  => {
+		console.log('.............munis', munis);
+  	  	this.setState({ munis })
+	  })
       .catch(err => console.log(err));
   }
 
-  selectAllocationPercent(ev) {
-    const selectedAllocation = ev.target.value;
-    this.setState({ selectedAllocation });
-  }
-
-  render() {
+   render() {
     // console.log('.....in App.js, state, props',this.state, this.props)
-    const transactions = [...this.state.transactions];
+    const munis = [...this.state.munis];
     return (
       <div className="container-fluid">
         <Nav />
@@ -41,17 +40,15 @@ class App extends Component {
           <div className="row">
 
             <div className="col-sm-5">
-            	<BondList bonds={this.state.bonds}/>
+            	<MuniList munis={ munis }/>
             </div>
 			
 			<div className="col-sm-2">
 				<Maturity />
 			</div>
 
-			
-
             <div className="col-sm-3">
-              <PortWeight bonds={this.state.bonds} allocationPercents={this.state.allocationPercents} />
+            	PORFOLIO WEIGHTS 
             </div>
 
           </div>
