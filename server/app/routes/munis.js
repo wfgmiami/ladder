@@ -6,21 +6,61 @@ const dateFormat = require('dateformat');
 const muniData = require( '../../../muniData.json');
 module.exports = router;
 
-router.get('/', (req, res, next) => {
-	res.send( createNewObject( muniData ));
+const currentYear = new Date().getFullYear();
+const pyShell = require("python-shell");
+
+const adjustedMuniData = createNewObject( muniData );
+/*
+let runPy = new Promise( function(sucess, failure) {
+	const { spawn } = require('child_process');
+	const pyProg = spawn('python', ['./../../../generate.py']);
+
+	pyProg.stdout.on('data', function(data){
+		success(data);
+	});
+	pyProg.stderr.on('data', (data) => {
+		failure(data);
+	});
+});
+
+*/
+router.get('/', (req, res, next) =>{
+/*
+	pyShell.run("generate.py",  function(err, result) {
+		console.log('from python....', err);
+	})
+		
+	runPy.then( function(fromPy) {
+		console.log('from py...........',fromPy);
+		res.send( createNewObject( muniData ));
+	})
+	.catch(err => console.log('Python promise error....',err));
+*/
+	res.send( adjustedMuniData );
+
 })
 
 
-router.get('/nasdaq/filter', (req, res, next) => {
+router.get('/filter', (req, res, next) => {
 
-	const { sector } = req.query;
-	let filteredArray = [];
-	sector.forEach( sect => {
-		let tempArray = nasdaqData.filter( stock => stock.Sector === sect );
-		filteredArray = filteredArray.concat( tempArray );
+	let maturityRange  = [];
+	let filteredMunis = [];
+
+	for(let i = req.query.min; i <= req.query.max; i++){
+		maturityRange.push(i * 1);
+	}
+	
+	maturityRange.forEach( maturity => {
+	
+		let tempArray = adjustedMuniData.filter( muni => {
+			   	return muni.ytm * 1 === maturity 
+				
+		});
+		
+		filteredMunis = filteredMunis.concat( tempArray );
 	})
 
-	res.send( createNewObject( filteredArray ));
+	res.send( filteredMunis );
 })
 
 router.get('/nasdaq/search', (req, res, next) => {
@@ -38,7 +78,7 @@ router.get('/nasdaq/search', (req, res, next) => {
 })
 
 
-createNewObject = ( arr ) => {
+function createNewObject(arr) {
 	let obj = {};
 	let munis = [];
 
@@ -46,6 +86,9 @@ createNewObject = ( arr ) => {
 		obj.cusip = muni.CUSIP;
 		obj.coupon = muni.Coupon;
 		obj.maturity = muni['Stated Maturity'];
+		let maturityYear = obj.maturity.slice(-4);
+		obj.ytm = maturityYear - currentYear;
+		if (obj.ytm < 0) obj.ytm = 0;
 		obj.sector = muni['Holdings Sector'];
 		obj.rating = muni['Opinion Internal Rating'];
 		munis.push(obj)

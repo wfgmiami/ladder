@@ -8,15 +8,38 @@ const MuniList = ({ munis }) => {
   return (
 	<div className="panel panel-default"><b>Available Muni Bonds:&nbsp; <span className="badge badge-info"> { total }</span></b>
 	<div>&nbsp;&nbsp;</div>
-	<form>	
-			<select className="form-control" multiple="multiple" style={{ minHeight: '65vh' }}>
-						{ munis.map( ( muni, id ) => (
-					<option key = { id } > { muni.cusip}; { muni.maturity }; { muni.coupon}; { muni.rating }; { muni.sector };</option>
-				) ) }
-				
-			</select>
+		<table>
+		 <thead>
+			<tr>
+				<th className="size">Cusip</th>
+				<th className="size">Maturity</th>
+				<th className="size">YTM</th>
+				<th className="size">Rating</th>
+				<th className="size">Sector</th>
+				<th className="size">Coupon</th>
+			</tr>
+		</thead>
+		</table>
+
+		<div style={{ maxHeight:'80vh', overflowY:'auto' }}>
+			<table>
+			<tbody>	
 			
-	</form>   
+			{ munis.map( ( muni, id ) => (
+				<tr key={ id }>
+					<td>{ muni.cusip }</td>
+					<td>{ muni.maturity }</td>
+					<td>{ muni.ytm }</td>
+					<td>{ muni.rating }</td>
+					<td>{ muni.sector }</td>
+					<td>{ muni.coupon }%</td>
+				</tr>		
+			) ) }
+			
+			</tbody>		
+			</table>	
+		</div>
+
 	</div>
 
 

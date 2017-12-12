@@ -36,7 +36,8 @@ app.use((req, res, next) => {
 });
 
 app.get('/*', (req, res, next) => {
-  res.sendFile(app.get('indexHTMLPath'));
+   
+	res.sendFile(app.get('indexHTMLPath'));
 })
 
 app.use((err, req, res, next) => {
