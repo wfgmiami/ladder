@@ -16,21 +16,19 @@ class App extends Component {
 
     this.state = {
 		munis:[],
-		ladder:[]
+		ladder:[],
+		rank:[],
+		amount:[]
 	};
   	
 	this.filterMaturity = this.filterMaturity.bind(this);
 	this.generateLadder = this.generateLadder.bind(this);
   	this.createRanking = this.createRanking.bind(this);
   }
-
-
-
   componentDidMount() {
     axios.get('/api/munis')
       .then(response => response.data)
       .then( munis  => {
-//		console.log('.............munis', munis);
   	  	this.setState({ munis })
 	  })
       .catch(err => console.log(err));
@@ -46,8 +44,6 @@ class App extends Component {
 	axios.get(url, { params: filter })
 		.then( response => response.data )
 		.then( munis => {
-			console.log('.....ladder..', this.state.ladder)
-			
 			this.setState( { munis } );
 		})
 		.then( () => this.createRanking() )
@@ -60,38 +56,57 @@ class App extends Component {
 	let aRatedPruned = {};
 	let aaRatedPruned = {};
 	let couponPruned = {};
+	let tempObj = {};
+	let finalRank = [];
 
 	ladderBuckets.forEach( bucket => {
 
 		let selectedMunis = this.state.munis.filter( muni => muni.ytm == bucket );
 		let healthCareMunis = selectedMunis.filter( muni => muni.sector == 'Health Care' );
-		let aRated = selectedMunis.filter( muni => muni.rating == 'A' );
+		let aRated = selectedMunis.filter( muni => muni.rating == 'A' ).concat( selectedMunis.filter( muni => muni.rating == 'A+') )
+					.concat( selectedMunis.filter( muni => muni.rating == 'A-' )).concat( selectedMunis.filter( muni => muni.rating.slice(0,2) == 'A/' ));
 		let aaRated = selectedMunis.filter( muni => muni.rating.slice(0,2) == 'AA' );
 		let couponRated = selectedMunis.sort( ( a,b ) => b.coupon - a.coupon );		
 		rankedMunis[bucket]=[{ 'HealthCare':healthCareMunis, 'aRated': aRated, 'aaRated': aaRated, 'couponRated': couponRated }]; 
 	   	
 	})
-//	console.log('rankedMunis')
+
 	ladderBuckets.forEach( bucket => {
-			aRatedPruned[bucket] = rankedMunis[bucket][0]['aRated'].filter( function(muni){ return !this.has(muni.cusip) }, new Set(rankedMunis[bucket][0]['HealthCare'] ));
+			rankedMunis[bucket][0]['HealthCare'].forEach( hcMuni => tempObj[hcMuni.cusip] = hcMuni );
+			aRatedPruned[bucket] = rankedMunis[bucket][0]['aRated'].filter( aRated => !(aRated.cusip in tempObj ));
+			aaRatedPruned[bucket] = rankedMunis[bucket][0]['aaRated'].filter( aaRated => !(aaRated.cusip in tempObj ));	
+			couponPruned[bucket] = rankedMunis[bucket][0]['couponRated'].filter( couponMuni => !(couponMuni.cusip in tempObj ));
 		
+			tempObj = {};
+			rankedMunis[bucket][0]['aRated'].forEach( aRated => tempObj[aRated.cusip] = aRated );
+			couponPruned[bucket] = couponPruned[bucket].filter( couponMuni => !(couponMuni.cusip in tempObj ));
+		
+			tempObj = {};
+			rankedMunis[bucket][0]['aaRated'].forEach( aaRated => tempObj[aaRated.cusip] = aaRated );
+			couponPruned[bucket] = couponPruned[bucket].filter( couponMuni => !(couponMuni.cusip in tempObj ));
 
-			aRatedPruned[bucket].forEach( aRated => {
-				aaRatedPruned[bucket] = rankedMunis[bucket][0]['aaRated'].filter( muni => muni.cusip != aRated.cusip );
-			})
-
-			aaRatedPruned[bucket].forEach( aaRated => {
-				couponPruned[bucket] = rankedMunis[bucket][0]['couponRated'].filter( muni => muni.cusip != aaRated.cusip ); 
-			})
+			finalRank[bucket] = rankedMunis[bucket][0]['HealthCare'].concat(aRatedPruned[bucket]).concat(aaRatedPruned[bucket]).concat(couponPruned[bucket]);
+			tempObj = {};
 	})
-
-  console.log('....ranked Munis', rankedMunis);
-  console.log('....aRatedPruned[3]', aRatedPruned[3]);			
+	this.setState({ rank: finalRank });
+ 	console.log('....ranked Munis', rankedMunis);
+  	console.log('....final', finalRank[3]);			
   }
 
   generateLadder(investedAmount){
+	let numBuckets = 1;
 	console.log('in generate ladder, investedAmount', investedAmount);
-
+	this.setState({ amount: investedAmount });
+	if( this.state.ladder.length != 0) numBuckets = this.state.ladder.length;
+	console.log('bucke lenght', this.state.ladder.length, numBuckets);	
+	const bucketMoney = Number(( investedAmount / numBuckets ).toFixed(0));
+	const minAllocCheck = Number((0.1 * bucketMoney).toFixed(0));
+	console.log('min aloc check', minAllocCheck);
+	if( minAllocCheck < 25000 ) {
+		alert(`10% of the cash in a bucket is ${ minAllocCheck.toLocaleString() }. This is less that minimum of 25K allocation`);
+		return;
+	}
+	console.log('bucketmoney....', bucketMoney);
   }
 
    render() {
