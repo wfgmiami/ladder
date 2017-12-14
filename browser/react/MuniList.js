@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 const MuniList = ({ munis }) => {
   const total = munis.length;
-	console.log('....in muni list, muni', munis);
+  //console.log('....in muni list, muni', munis);
 
   return (
 	<div className="panel panel-default"><b>Available Muni Bonds:&nbsp; <span className="badge badge-info"> { total }</span></b>
