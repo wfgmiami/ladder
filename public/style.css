@@ -12,7 +12,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 table {
-	border-collapse: separate;
+	border-collapse: collapse;
 	border-spacing: 0;
 	color: #4a4a4d;
 	font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -62,6 +62,7 @@ input.size {
 
 tfoot {
 	text-align: center;
+	border-top: 1px solid #cecfd5;
 }	
 
 tfoot tr:last-child {

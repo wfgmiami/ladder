@@ -21,7 +21,7 @@ const MuniList = ({ munis }) => {
 		</thead>
 		</table>
 
-		<div style={{ maxHeight:'80vh', overflowY:'auto' }}>
+		<div style={{ maxHeight:'65vh', overflowY:'auto' }}>
 			<table>
 			<tbody>	
 			

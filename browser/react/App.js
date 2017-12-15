@@ -8,7 +8,8 @@ import Maturity from './Maturity';
 import Constraint from './Constraint';
 import InvestedAmount from './InvestedAmount';
 import BucketAllocation from './BucketAllocation';
-
+import BucketSummary from './BucketSummary';
+import muniList from '../../muniList.json';
 
 class App extends Component {
   constructor(props) {
@@ -18,7 +19,10 @@ class App extends Component {
 		munis:[],
 		ytmLadder:[],
 		rankedMuniList:[],
-
+		allocatedData: [],
+		allocSector: {},
+		allocRating: {},
+		investedAmount:[]
 	};
   	
 	this.filterMaturity = this.filterMaturity.bind(this);
@@ -27,22 +31,18 @@ class App extends Component {
   }
 
   componentDidMount() {
-	this.state.sectorAlloc = {};
-    if( localStorage.getItem('munis') ){
-		console.log('munis from storage....');
-		const munis = JSON.parse(localStorage.getItem('munis'));
-		this.setState({ munis });
-	}else{
+/*
+  	if( this.state.munis.length == 0){	 
 		axios.get('/api/munis')
 		  .then(response => response.data)
 		  .then( munis  => {
 			this.setState({ munis })
 		  })
-		  .then( () => {
-			localStorage.setItem('munis', JSON.stringify(this.state.munis));
-		  })
-		  .catch(err => console.log(err));
-	}	  
+		  .catch(err => console.log(err));	
+	}
+*/	
+	this.setState({ munis: muniList });	
+
   }
 
   filterMaturity( filter ){
@@ -123,6 +123,7 @@ class App extends Component {
 	let rankIndex = 0;
 	
 	let buckets = this.state.ytmLadder;
+	this.setState({ investedAmount });
 
 	if( buckets.length !== 0 ) numBuckets = buckets.length;
 
@@ -138,6 +139,8 @@ class App extends Component {
 	let bucket = buckets[numBuckets-1];
 	let allocCash = 0;
 	let changedRule = false;
+	let increaseAfterFirstDown = false;
+
 	const chosenBond = muniData[bucket][appliedRank][bondIndex]; 
 
 	do{
@@ -145,7 +148,7 @@ class App extends Component {
 	
 		let sector = chosenBond.sector;
 		let rating = chosenBond.rating;
-		console.log('chosen bond', chosenBond, bondIndex, bucket, appliedRank,sector, rating);
+//		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
 		if(	allocSector[sector] ){
 			allocSector[sector] += minAllocBond;
 		}else{
@@ -169,8 +172,8 @@ class App extends Component {
 		if( sector == 'Health Care' && allocSector[sector] > maxHealthCare * investedAmount ){
 //			console.log('hit....', maxHealthCare, investedAmount);
 			allocSector[sector] -= minAllocBond;
-			appliedRank = ranking[++rankIndex];
 			allocBucket[bucket] -= minAllocBond;
+			appliedRank = ranking[++rankIndex];
 			changedRule = true;
 		}else if( allocSector[sector] > maxSector * investedAmount ){
 			allocSector[sector] -= minAllocBond;
@@ -180,16 +183,20 @@ class App extends Component {
 				bondIndex = 0;
 				changedRule = true;
 			}else{
-				console.log('......hit sector', sector, maxSector*investedAmount);
+//				console.log('......hit sector', sector, maxSector*investedAmount);
 				bondIndex++;
 			}
-		}else if( allocRating['aAndBelow'] > maxRating * investedAmount ){
-//			console.log('hit....', maxRating, investedAmount, maxRating*investedAmount, allocRating['aAndBelow']);
+		}else if( allocRating['aAndBelow'] > maxRating * investedAmount && rating.slice(0,2) !== 'AA' ){
+//			console.log('hit...aAndBewlow >....', maxRating, investedAmount, maxRating*investedAmount, allocRating['aAndBelow']);
 			allocRating['aAndBelow'] -= minAllocBond;
 			allocBucket[bucket] -= minAllocBond;
 			appliedRank = ranking[++rankIndex];
+			changedRule = true;
 			bondIndex = 0;
 		}else if( allocBucket[bucket] == bucketMoney ){
+			chosenBond['investAmt'] = minAllocBond;
+			allocatedData[bucket].push( chosenBond )
+
 			let idx = buckets.indexOf(bucket);
 			buckets.splice(idx,1);
 			console.log('splicing...', bucket, bucketMoney, idx, buckets);
@@ -198,12 +205,22 @@ class App extends Component {
 				bucket--;
 			}
 		}else if( allocBucket[bucket] > bucketMoney ){
-			if( ( allocBucket[bucket] - bucketMoney ) < minAllocBond ){
-				allocCash = allocBucket[bucket] - bucketMoney;
-			}else{
-
-			}
+				
+				allocCash = ( bucketMoney - ( allocBucket[bucket] -  minAllocBond ) );
+				chosenBond['cusip'] = 'Cash';
+				chosenBond['investAmt'] = allocCash;
+				allocatedData[bucket].push( chosenBond );
+				
+				let idx = buckets.indexOf(bucket);
+				buckets.splice(idx,1);
+//				console.log('splicing...money left', bucket, bucketMoney, idx, buckets);
+				numBuckets = buckets.length;
+				if( numBuckets != 0 ){
+					bucket--;
+				}
+				
 		}else{
+			chosenBond['investAmt'] = minAllocBond;
 			if( allocatedData[bucket] ){
 				allocatedData[bucket].push( chosenBond );
 			}else{
@@ -214,27 +231,34 @@ class App extends Component {
 //				console.log('first bucket', bucket, buckets[0]);
 				bucket = buckets[numBuckets - 1];
 				if( !changedRule ){
-					bondIndex++;
-					
+					bondIndex++;	
+				
 				}else{
 					changedRule = false;
-					bondIndex = 0;
+					increaseAfterFirstDown = true;
 				}
 			}else if( numBuckets > 1 ){
 //				console.log('bucket', bucket);
 				bucket--;
+				if(increaseAfterFirstDown){
+					bondIndex++;
+					increaseAfterFirstDown = false;
+				}
 			}
 		
 //				console.log('bondIndex, bucket, changedRule', bondIndex, bucket, changedRule)								
 		}	
 				
-		
+//		cnt++
+			//numBuckets > 0
 	}while( numBuckets > 0 )
 
-	console.log('result...', allocatedData, allocSector, allocRating, allocBucket);
-
+	//3/7 300k - good case
+//	console.log('result...', allocatedData, allocSector, allocRating, allocBucket);
+	this.setState({ allocatedData });
+	this.setState({ allocSector });
+	this.setState({ allocRating });
   }
-
 
 
    render() {
@@ -262,13 +286,16 @@ class App extends Component {
 					<Constraint />
 				</div>	
 				<div>&nbsp;</div><div>&nbsp;</div>
-				<div>
-					<BucketAllocation />
-				</div>	
+				
+				{ this.state.allocatedData.length != 0 ?
+					<div>
+				    <BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>	
+					<BucketAllocation allocatedData = { this.state.allocatedData }/> </div>: null }
+					
           
 		 </div>
 
-        </div>
+       </div>
       </div>
     );
   }

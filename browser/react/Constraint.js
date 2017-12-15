@@ -19,7 +19,13 @@ return (
 					30% max A+ and below rated bonds
 				</td>
 			</tr>
-		</tbody>
+			<tr>
+				<td>
+					10% max per bond
+				</td>
+			</tr>
+	
+	    </tbody>
 	</table>
 
 	<table>	
@@ -28,11 +34,7 @@ return (
 		</thead>
 
 		<tbody>
-			<tr>
-				<td className="">
-					10% max per bond	
-				</td>	
-			</tr>
+			
 			<tr>
 				<td className="">
 					25k min allocated 	
