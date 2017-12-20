@@ -1,72 +1,54 @@
 import React from 'react';
-import cx from 'classnames';
-import blacklist from 'blacklist';
-import PropTypes from 'prop-types';
 
 
 class AmountSlider extends React.Component {
-	static propTypes = {
-		axis: PropTypes.string,
-		x: PropTypes.number,
-		xmax: PropTypes.number,
-		xmin: PropTypes.number,
-		y: PropTypes.number,
-		ymax: PropTypes.number,
-		ymin: PropTypes.number,
-		xstep: PropTypes.number,
-		ystep: PropTypes.number
+	constructor(){
+		super();
+		this.state = {
+			input: {},
+			div: {},
+			span: {},
+			sliderValue: 250000
+		}
+		this.sliderChange = this.sliderChange.bind(this);
+
 	}
 
-	static defaultProps = {
-		axis: x,
-		xmin: 250000,
-		ymin: 0,
-		ymax: 0,
-		xstep: 1000,
-		ystep: 0
-	}	
+	componentDidMount(){
+		const input = this.inputRange;
+		const div = this.div;
+		const span = this.span;
 
+		this.setState( { input });
+		this.setState( { div });
+		this.setState( { span });
+
+	}
+
+
+	sliderChange(e){
+		//const spanValue = this.state.span.previousElementSibling.getAttribute('value');
+		//this.setState( { spanValue });
+		const sliderValue = e.target.value;
+		this.setState({ sliderValue })
+		console.log('this.......', this,e, e.target.value)
+	}
 
 	render(){
-		const { axis } = this.props;
-
-		const props = blacklist(
-			this.props,
-			'x',
-			'y',
-			'xmin',
-			'xmax',
-			'ymin',
-			'ymax',
-			'xstep',
-			'ystep',
-			'onChange',
-			'onDragEnd',
-			'className',
-			'onClick'
-		);
-
-		const pos = this.getPosition();
-		getPosition = () => {
-			let top = 0;
-			let left = ( this.props.x - this.props.xmin ) /
-				( this.props.xmax - this.props.xmin ) * 100;
-			if ( left > 100 ) left = 100;
-			if ( left < 0 ) left = 0;
-			left += '%';
-			return { top, left };
-		}
-
-		const valueStyle = {};
-		valueStyle.width = pos.left;
-		props.className = cx( 'u-slider', `u-slider-${axis}`, this.props.className );
-
+		console.log('state......', this.state)
 		return(
-	    
+			<div>
+
+				<div ref = { div => this.div = div } className="range-slider" >
+					<input onInput={ (e) => this.sliderChange(e) } ref = { inputRange => this.inputRange = inputRange } className="range-slider__range" type="range" value={ this.state.sliderValue } min="250000" max="5000000" step="10000"/>
+
+					<span ref = { span => this.span = span } className="range-slider__value">${ Number(this.state.sliderValue).toLocaleString() }</span>
+
+				</div>
+			</div>
 		)
 
 	}
-
 }
 
 export default AmountSlider;

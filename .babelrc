@@ -1,3 +1,3 @@
 {
-	"presets": ['react', 'es2015-loose', 'react-hmre'],
+	"presets": ['react', 'es2015-loose', 'react-hmre', 'stage-0'],
 }
