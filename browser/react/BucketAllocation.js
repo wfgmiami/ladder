@@ -14,9 +14,10 @@ class BucketAllocation extends React.Component{
 		let totalByBucket = 0;
 		let totalInBucket = [];
 		let totalLines = [];
+		let keyIdx = 0;
 
 		const buckets = Object.keys(this.props.allocatedData);
-		buckets.forEach(bucket => {
+		buckets.forEach( bucket => {
 			for(let i = 0; i < buckets.length; i++){
 				lenBucket.push(this.props.allocatedData[bucket].length);
 			}
@@ -25,11 +26,11 @@ class BucketAllocation extends React.Component{
 				totalByBucket += this.props.allocatedData[bucket][j].investAmt;	
 //				console.log(this.props.allocatedData[bucket][j].investAmt)
 			}
-			totalLines.push(<td>{ totalByBucket.toLocaleString() }</td>)	
+			totalLines.push(<td key = { keyIdx++ }>{ totalByBucket.toLocaleString() }</td>)	
 			totalByBucket = 0;
 		})
 
-		totalInBucket.push(<tr key={ 0 }> { totalLines }</tr>);
+		totalInBucket.push(<tr key={ keyIdx++ }> { totalLines }</tr>);
 		maxLen = Math.max(...lenBucket);
 
 		let tblData = [];
@@ -40,26 +41,26 @@ class BucketAllocation extends React.Component{
 		for(let row = 0; row < maxLen; row++){
 			//	tblData.push('<tr>');
 
-				buckets.forEach( bucket => {
+				buckets.forEach( ( bucket, id ) => {
 					dataLine = this.props.allocatedData[bucket][row];
-					if(dataLine){
+					if( dataLine ){
 						if( dataLine.cusip != 'Cash' ){
-							rowLines.push(<td>{ dataLine.cusip }, {dataLine.coupon}%, {dataLine.ytm}yr
+							rowLines.push(<td key = { keyIdx++ }>{ dataLine.cusip }, {dataLine.coupon}%, {dataLine.ytm}yr
 								<tr>{ dataLine.sector }, {''} { dataLine.rating }</tr>
 								<tr>${ dataLine.investAmt.toLocaleString() }</tr>
 								</td>)				
 			   			}else{
-							rowLines.push(<td>{ dataLine.cusip }
+							rowLines.push(<td key = { keyIdx++ }>{ dataLine.cusip }
 								<tr>${ dataLine.investAmt.toLocaleString() }</tr>
 								</td>)	
 						}			
 						
 					}else{
-						rowLines.push(<td>{ '' }</td>)
+						rowLines.push(<td key = { keyIdx++ }>{ '' }</td>)
 					}					
 				})
 	
-				tblData.push(<tr key={ row }>{ rowLines }</tr>);
+				tblData.push(<tr key={ keyIdx++ }>{ rowLines }</tr>);
 				rowLines = [];
 		}
 		
@@ -71,7 +72,7 @@ class BucketAllocation extends React.Component{
 				<tr><td colSpan={ buckets.length } style={{ textAlign: 'center', color: 'yellow' }}>{ tblName }</td></tr>
 				<tr>
 				{ buckets.map( (bucket, id) => (
-					<th key={ id } className='size' style={{ textAlign: 'center' }}>{ bucket }</th>
+					<th key={ keyIdx++ } className='size' style={{ textAlign: 'center' }}>{ bucket }</th>
 				))}
 				</tr>
 			</thead>

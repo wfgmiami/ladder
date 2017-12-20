@@ -21,8 +21,8 @@ class InvestedAmount extends React.Component{
 	}
 	
 	onGenerate(ev){
-		this.props.generateLadder(this.state.investedAmount);
 		ev.preventDefault();
+		this.props.generateLadder(this.state.investedAmount);
 
 		const investedAmount = this.state.investedAmount;
 		this.setState({ investedAmount });

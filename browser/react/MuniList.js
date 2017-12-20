@@ -1,49 +1,56 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import ReactDataGrid  from 'react-data-grid';
 
-const MuniList = ({ munis }) => {
-  const total = munis.length;
-  //console.log('....in muni list, muni', munis);
+class MuniList extends React.Component{
+	constructor(props){
+		super(props);
 
-  return (
-	<div className="panel panel-default"><b>Available Muni Bonds:&nbsp; <span className="badge badge-info"> { total }</span></b>
-	<div>&nbsp;&nbsp;</div>
-		<table>
-		 <thead>
-			<tr>
-				<th className="size">Cusip</th>
-				<th className="size">Maturity</th>
-				<th className="size">YTM</th>
-				<th className="size">Rating</th>
-				<th className="size">Sector</th>
-				<th className="size">Coupon</th>
-			</tr>
-		</thead>
-		</table>
+		this.state = {
+			munis: []
+		}
 
-		<div style={{ maxHeight:'65vh', overflowY:'auto' }}>
-			<table>
-			<tbody>	
-			
-			{ munis.map( ( muni, id ) => (
-				<tr key={ id }>
-					<td>{ muni.cusip }</td>
-					<td>{ muni.maturity }</td>
-					<td>{ muni.ytm }</td>
-					<td>{ muni.rating }</td>
-					<td>{ muni.sector }</td>
-					<td>{ muni.coupon }%</td>
-				</tr>		
-			) ) }
-			
-			</tbody>		
-			</table>	
-		</div>
-
-	</div>
+		this._columns = [
+			{ key: 'cusip', name: 'Cusip' },
+			{ key: 'maturity', name: 'Maturity' },
+			{ key: 'ytm', name: 'YTM' },
+			{ key: 'rating', name: 'Rating' },
+			{ key: 'sector', name: 'Sector' },
+			{ key: 'coupon', name: 'Coupon' }	
+		
+		]
+		this.rowGetter = this.rowGetter.bind(this);
+	}
 
 
-  );
-};
+	componentWillReceiveProps( nextProps ){
+		if( nextProps.munis !== this.state.munis ){
+			this.setState( { munis: nextProps.munis } );
+		}
+	}
+
+	rowGetter( i ){
+		return this.state.munis[i];
+	}
+
+	render(){
+  		
+		const total = this.state.munis.length;
+		const headerText = "Available Muni Bonds";
+console.log('.....muni list', this.state.munis);
+		return (
+			<div className="panel panel-default"><b>{ headerText } &nbsp; <span className="badge badge-info"> { total }</span></b>
+			<div>&nbsp;&nbsp;</div>
+			<ReactDataGrid
+				columns={ this._columns }
+				rowGetter = { this.rowGetter }
+				rowsCount = { total }
+				/>		
+			</div>
+		);
+
+	}
+}
+
 
 export default MuniList;

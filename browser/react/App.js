@@ -10,6 +10,9 @@ import InvestedAmount from './InvestedAmount';
 import BucketAllocation from './BucketAllocation';
 import BucketSummary from './BucketSummary';
 import muniList from '../../muniList.json';
+import css from '../../assets/stylesheets/style.scss';
+
+const Promise = require('es6-promise-promise');
 
 class App extends Component {
   constructor(props) {
@@ -121,11 +124,13 @@ class App extends Component {
  	let allocRating = {};
 	let allocBucket = {};
 	let rankIndex = 0;
-	
+ 	let oneBucketFlag = false;
+
 	let buckets = this.state.ytmLadder;
 	this.setState({ investedAmount });
 
 	if( buckets.length !== 0 ) numBuckets = buckets.length;
+	if( buckets.length === 1 ) oneBucketFlag = true;
 
 	const bucketMoney = Number(( investedAmount / numBuckets ).toFixed(0));
 	const minAllocCheck = Number(( maxPercBond * investedAmount).toFixed(0));
@@ -148,7 +153,7 @@ class App extends Component {
 	
 		let sector = chosenBond.sector;
 		let rating = chosenBond.rating;
-//		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
+		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
 		if(	allocSector[sector] ){
 			allocSector[sector] += minAllocBond;
 		}else{
@@ -170,7 +175,7 @@ class App extends Component {
 		}
 
 		if( sector == 'Health Care' && allocSector[sector] > maxHealthCare * investedAmount ){
-//			console.log('hit....', maxHealthCare, investedAmount);
+			console.log('hit....', maxHealthCare, investedAmount);
 			allocSector[sector] -= minAllocBond;
 			allocBucket[bucket] -= minAllocBond;
 			appliedRank = ranking[++rankIndex];
@@ -183,11 +188,11 @@ class App extends Component {
 				bondIndex = 0;
 				changedRule = true;
 			}else{
-//				console.log('......hit sector', sector, maxSector*investedAmount);
+				console.log('......hit sector', sector, maxSector*investedAmount);
 				bondIndex++;
 			}
 		}else if( allocRating['aAndBelow'] > maxRating * investedAmount && rating.slice(0,2) !== 'AA' ){
-//			console.log('hit...aAndBewlow >....', maxRating, investedAmount, maxRating*investedAmount, allocRating['aAndBelow']);
+			console.log('hit...aAndBewlow >....', maxRating, investedAmount, maxRating*investedAmount, allocRating['aAndBelow']);
 			allocRating['aAndBelow'] -= minAllocBond;
 			allocBucket[bucket] -= minAllocBond;
 			appliedRank = ranking[++rankIndex];
@@ -244,6 +249,8 @@ class App extends Component {
 					bondIndex++;
 					increaseAfterFirstDown = false;
 				}
+			}else if( oneBucketFlag ){
+				bondIndex++;
 			}
 		
 //				console.log('bondIndex, bucket, changedRule', bondIndex, bucket, changedRule)								

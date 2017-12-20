@@ -5,7 +5,8 @@ module.exports = {
   devtool: 'source-map',
   entry: [
     'webpack-hot-middleware/client',
-    path.join(__dirname, '/browser/react/index.js')
+	'babel-polyfill',
+  	path.join(__dirname, '/browser/react/index.js')
   ],
   output: {
     path: path.join(__dirname, '/public'),
@@ -13,15 +14,9 @@ module.exports = {
     publicPath: '/dev'
   },
   module: {
-    loaders: [
-      {
-        test: /\.js$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
-        query: {
-          presets: ['react', 'es2015', 'stage-0', 'react-hmre']
-        }
-      }
+    loaders: [  	
+		{ test:/\.js$/, exclude: /node_modules/, loader: 'babel-loader' },
+		{ test:/\.scss$/, loader: 'style-loader!css-loader!sass-loader' }	
     ]
   },
   plugins: [

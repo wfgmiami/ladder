@@ -6,7 +6,7 @@ return (
 	<div>
 	<table>
 		<thead>
-			<th className="size">Rules at Portfolio Level</th>
+			<tr><th className="size">Rules at Portfolio Level</th></tr>
 		</thead>
 		<tbody>
 			<tr>
@@ -30,7 +30,7 @@ return (
 
 	<table>	
 		<thead>
-			<th className="size">Rules at Bucket / Bond Level</th>
+			<tr><th className="size">Rules at Bucket / Bond Level</th></tr>
 		</thead>
 
 		<tbody>
@@ -60,7 +60,7 @@ return (
 	</table>
 	<table>	
 		<thead>
-			<th className="size">Ranking Rules at Bond Level</th>
+			<tr><th className="size">Ranking Rules at Bond Level</th></tr>
 		</thead>
 
 		<tbody>

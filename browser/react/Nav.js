@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Maturity from './Maturity';
 
 class Nav extends React.Component {
   constructor(props) {
@@ -9,36 +10,23 @@ class Nav extends React.Component {
   render() {
 	  return (
   <div>
-    <nav id="mainNavbar" className="navbar navbar-default navbar-fixed-top">
+    <nav className="navbar navbar-default navbar-fixed-top">
       <div className="container-fluid">
-        <div className="navbar-header">
-          <button type="button" className="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-            <span className="icon-bar" />
-            <span className="icon-bar" />
-            <span className="icon-bar" />
-          </button>
-          <div className="navbar-brand"><Link to="/">Portoflio Allocation</Link></div>
-        </div>
-        <div className="collapse navbar-collapse">
-          <ul className="nav navbar-nav">
-            <li>
-              <a href="#"></a>
-            </li>
-            <li className="divider" />
-            <li>
-              <a href="#"></a>
-            </li>
-            <li>
+	
+  		  <div className="row">
+			<div className="col-sm-8">
+				<div className="navbar-header">
+					<div className="navbar-brand">Portoflio Allocation</div>
+	     		</div>
+			</div>
+			<div className="col-sm-4">
+				&nbsp;
+					
+			</div>
 
-            </li>
-          </ul>
-          <ul className="nav navbar-nav navbar-right">
-            <li className="">
-              <Link to="#">
-              </Link>
-            </li>
-          </ul>
-        </div>
+		 </div>
+
+	
       </div>
     </nav>
   </div>
