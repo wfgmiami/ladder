@@ -4,11 +4,11 @@ $font-size-body: pc($font-size-body-px, 16);
 $line-height: em($line-height-px, $font-size-body-px);
 
 
-body {
+html, body {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: $font-size-body;
 	-webkit-text-size-adjust: 100%;
-	-ms-text-size-adjust: 100%
+	-ms-text-size-adjust: 100%;
 }
 
 // Base Colors
@@ -127,14 +127,14 @@ $range-label-width: 100px !default;
 }
 
 .range-slider-double {
-  position: relative;	
+  position: relative;
   float: left;
   width: $range-width;
 }
 
 input[type='range'].range-slider-double__range{
 	position: absolute;
-	-webkit-appearance: none;	
+	-webkit-appearance: none;
 	width: calc(100% - (#{$range-label-width + 13px}));
 	height: $range-track-height;
 	border-radius: 5px;
@@ -145,12 +145,10 @@ input[type='range'].range-slider-double__range{
 }
 
 input[type='range'].range-slider-double__range::-webkit-slider-thumb {
- 	position: relative; 
+ 	position: relative;
   	z-index: 1;
-	cursor: pointer;	
+	cursor: pointer;
 }
-
-
 
 .range-slider-max__value {
   display: inline-block;
@@ -190,5 +188,5 @@ input::-moz-focus-outer {
 }
 
 .navbar-custom {
-	background-color: #aead95;	
+  background-color: #aead95;
 }

@@ -27,21 +27,21 @@ class App extends Component {
 		allocRating: {},
 		investedAmount:[]
 	};
-  	
+
 	this.filterMaturity = this.filterMaturity.bind(this);
 	this.generateLadder = this.generateLadder.bind(this);
   	this.createRanking = this.createRanking.bind(this);
   }
 
-  componentDidMount() {	
-	this.setState({ munis: muniList });	
+  componentDidMount() {
+	this.setState({ munis: muniList });
   }
 
   filterMaturity( filter ){
 	let url = '/api/munis/filter';
 	let ytmLadder = [];
 	for(let i = filter.min; i <= filter.max; i++){
-		ytmLadder.push(i);	
+		ytmLadder.push(i);
 	}
 	this.setState({ ytmLadder });
 	axios.get(url, { params: filter })
@@ -69,31 +69,31 @@ class App extends Component {
 		let aRated = selectedMunis.filter( muni => muni.rating == 'A' ).concat( selectedMunis.filter( muni => muni.rating == 'A+') )
 					.concat( selectedMunis.filter( muni => muni.rating == 'A-' )).concat( selectedMunis.filter( muni => muni.rating.slice(0,2) == 'A/' ));
 		let aaRated = selectedMunis.filter( muni => muni.rating.slice(0,2) == 'AA' );
-		let couponRated = selectedMunis.sort( ( a,b ) => b.coupon - a.coupon );		
-		rankedMunis[bucket]=[{ 'HealthCare':healthCareMunis, 'aRated': aRated, 'aaRated': aaRated, 'couponRated': couponRated }]; 
-	   	
+		let couponRated = selectedMunis.sort( ( a,b ) => b.coupon - a.coupon );
+		rankedMunis[bucket]=[{ 'HealthCare':healthCareMunis, 'aRated': aRated, 'aaRated': aaRated, 'couponRated': couponRated }];
+
 	})
 
 	ladderBuckets.forEach( bucket => {
 			rankedMunis[bucket][0]['HealthCare'].forEach( hcMuni => tempObj[hcMuni.cusip] = hcMuni );
 			aRatedPruned[bucket] = rankedMunis[bucket][0]['aRated'].filter( aRated => !(aRated.cusip in tempObj ));
-			aaRatedPruned[bucket] = rankedMunis[bucket][0]['aaRated'].filter( aaRated => !(aaRated.cusip in tempObj ));	
+			aaRatedPruned[bucket] = rankedMunis[bucket][0]['aaRated'].filter( aaRated => !(aaRated.cusip in tempObj ));
 			couponPruned[bucket] = rankedMunis[bucket][0]['couponRated'].filter( couponMuni => !(couponMuni.cusip in tempObj ));
-		
+
 			tempObj = {};
 			rankedMunis[bucket][0]['aRated'].forEach( aRated => tempObj[aRated.cusip] = aRated );
 			couponPruned[bucket] = couponPruned[bucket].filter( couponMuni => !(couponMuni.cusip in tempObj ));
-		
+
 			tempObj = {};
 			rankedMunis[bucket][0]['aaRated'].forEach( aaRated => tempObj[aaRated.cusip] = aaRated );
 			couponPruned[bucket] = couponPruned[bucket].filter( couponMuni => !(couponMuni.cusip in tempObj ));
-			rankedMuniList[bucket] = { 'HealthCare': rankedMunis[bucket][0]['HealthCare'], 'aRated': aRatedPruned[bucket], 'aaRated': aaRatedPruned[bucket], 'couponRated': couponPruned[bucket] };	
+			rankedMuniList[bucket] = { 'HealthCare': rankedMunis[bucket][0]['HealthCare'], 'aRated': aRatedPruned[bucket], 'aaRated': aaRatedPruned[bucket], 'couponRated': couponPruned[bucket] };
 //			finalRank[bucket] = rankedMunis[bucket][0]['HealthCare'].concat(aRatedPruned[bucket]).concat(aaRatedPruned[bucket]).concat(couponPruned[bucket]);
 			tempObj = {};
 	})
 	this.setState({ rankedMuniList });
 // 	console.log('....ranked Munis', rankedMunis);
-  	console.log('....final', rankedMuniList);			
+  	console.log('....final', rankedMuniList);
   }
 
   generateLadder(investedAmount){
@@ -103,7 +103,7 @@ class App extends Component {
 	const maxSector = 0.20;
 	const maxHealthCare = 0.12;
 	const maxRating = 0.30;
-	
+
 	const ranking = ['HealthCare', 'aRated', 'aaRated', 'couponRated'];
 	const allocatedData = {};
 	const muniData = this.state.rankedMuniList;
@@ -123,7 +123,7 @@ class App extends Component {
 
 	const bucketMoney = Number(( investedAmount / numBuckets ).toFixed(0));
 	const minAllocCheck = Number(( maxPercBond * investedAmount).toFixed(0));
-	
+
 	if( minAllocCheck < minAllocBond ) {
 		alert(`${ maxPercBond * 100 } of the total invested amount is ${ minAllocCheck.toLocaleString() }. This is less that minimum of ${ minAllocBond.toLocaleString()} allocation`);
 		return;
@@ -135,11 +135,11 @@ class App extends Component {
 	let changedRule = false;
 	let increaseAfterFirstDown = false;
 
-	const chosenBond = muniData[bucket][appliedRank][bondIndex]; 
+	const chosenBond = muniData[bucket][appliedRank][bondIndex];
 
 	do{
-		const chosenBond = muniData[bucket][appliedRank][bondIndex]; 
-	
+		const chosenBond = muniData[bucket][appliedRank][bondIndex];
+
 		let sector = chosenBond.sector;
 		let rating = chosenBond.rating;
 		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
@@ -147,16 +147,16 @@ class App extends Component {
 			allocSector[sector] += minAllocBond;
 		}else{
 			allocSector[sector] = minAllocBond;
-		} 				
-	
+		}
+
 		if( rating.slice(0,2) !== 'AA' ){
 			if( allocRating['aAndBelow'] ){
 				allocRating['aAndBelow'] += minAllocBond;
 			}else{
 				allocRating['aAndBelow'] = minAllocBond;
 			}
-		}	
-	
+		}
+
 		if( allocBucket[bucket] ){
 			allocBucket[bucket] += minAllocBond;
 		}else{
@@ -199,12 +199,12 @@ class App extends Component {
 				bucket--;
 			}
 		}else if( allocBucket[bucket] > bucketMoney ){
-				
+
 				allocCash = ( bucketMoney - ( allocBucket[bucket] -  minAllocBond ) );
 				chosenBond['cusip'] = 'Cash';
 				chosenBond['investAmt'] = allocCash;
 				allocatedData[bucket].push( chosenBond );
-				
+
 				let idx = buckets.indexOf(bucket);
 				buckets.splice(idx,1);
 //				console.log('splicing...money left', bucket, bucketMoney, idx, buckets);
@@ -212,7 +212,7 @@ class App extends Component {
 				if( numBuckets != 0 ){
 					bucket--;
 				}
-				
+
 		}else{
 			chosenBond['investAmt'] = minAllocBond;
 			if( allocatedData[bucket] ){
@@ -220,13 +220,13 @@ class App extends Component {
 			}else{
 				allocatedData[bucket] = [chosenBond];
 			}
-			
+
 			if( (bucket - 1) < buckets[0] && numBuckets > 1){
 //				console.log('first bucket', bucket, buckets[0]);
 				bucket = buckets[numBuckets - 1];
 				if( !changedRule ){
-					bondIndex++;	
-				
+					bondIndex++;
+
 				}else{
 					changedRule = false;
 					increaseAfterFirstDown = true;
@@ -241,10 +241,10 @@ class App extends Component {
 			}else if( oneBucketFlag ){
 				bondIndex++;
 			}
-		
-//				console.log('bondIndex, bucket, changedRule', bondIndex, bucket, changedRule)								
-		}	
-				
+
+//				console.log('bondIndex, bucket, changedRule', bondIndex, bucket, changedRule)
+		}
+
 //		cnt++
 			//numBuckets > 0
 	}while( numBuckets > 0 )
@@ -263,32 +263,25 @@ class App extends Component {
     return (
       <div className="container-fluid">
         <Nav filterMaturity = { this.filterMaturity } generateLadder = { this.generateLadder }/>
-        <div style={{ marginTop: '100px' }}>
-          <div className="row">
+          <div style={{ marginTop: '105px' }} className="row">
 
-            <div className="col-sm-5">
+            <div className="col-sm-9">
             	<MuniList munis={ munis }/>
             </div>
-		    	
-				<div className="col-sm-2">
-					<Maturity filterMaturity = { this.filterMaturity }/>
-				</div>
 
-			
-				<div className="col-sm-3">
-					<Constraint />
-				</div>	
-				<div>&nbsp;</div><div>&nbsp;</div>
-				
-				{ this.state.allocatedData.length != 0 ?
-					<div>
-				    <BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>	
-					<BucketAllocation allocatedData = { this.state.allocatedData }/> </div>: null }
-					
-          
-		 </div>
 
-       </div>
+						<div className="col-sm-3">
+							<Constraint />
+						</div>
+						<div>&nbsp;</div><div>&nbsp;</div>
+
+						{ this.state.allocatedData.length != 0 ?
+							<div>
+								<BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>
+							<BucketAllocation allocatedData = { this.state.allocatedData }/> </div>: null }
+
+		 			</div>
+
       </div>
     );
   }
