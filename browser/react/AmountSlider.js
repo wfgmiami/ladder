@@ -2,50 +2,63 @@ import React from 'react';
 
 
 class AmountSlider extends React.Component {
-	constructor(){
-		super();
+	constructor( props ){
+		super( props );
 		this.state = {
 			input: {},
-			div: {},
 			span: {},
-			sliderValue: 250000
+			investedAmount: 1000000
 		}
 		this.sliderChange = this.sliderChange.bind(this);
-
+		this.onGenerate = this.onGenerate.bind(this);
 	}
 
 	componentDidMount(){
 		const input = this.inputRange;
-		const div = this.div;
 		const span = this.span;
 
 		this.setState( { input });
-		this.setState( { div });
 		this.setState( { span });
 
 	}
 
+	onMoneyChange(ev){
+		let investedAmount = ev.target.value;
+		this.setState({ investedAmount });
+	}
+	
+	onGenerate(ev){
+		ev.preventDefault();
+		this.props.generateLadder(this.state.investedAmount);
+	}
 
 	sliderChange(e){
-		//const spanValue = this.state.span.previousElementSibling.getAttribute('value');
-		//this.setState( { spanValue });
-		const sliderValue = e.target.value;
-		this.setState({ sliderValue })
-		console.log('this.......', this,e, e.target.value)
+		const investedAmount = e.target.value;
+		this.setState({ investedAmount })
+//		console.log('this.......', this,e, e.target.value)
 	}
 
 	render(){
-		console.log('state......', this.state)
+//		console.log('state......', this.state)
 		return(
+			
 			<div>
-
-				<div ref = { div => this.div = div } className="range-slider" >
-					<input onInput={ (e) => this.sliderChange(e) } ref = { inputRange => this.inputRange = inputRange } className="range-slider__range" type="range" value={ this.state.sliderValue } min="250000" max="5000000" step="10000"/>
-
-					<span ref = { span => this.span = span } className="range-slider__value">${ Number(this.state.sliderValue).toLocaleString() }</span>
-
+				<div style={{ float:'left' }}>
+					
+					<p><b>Invested Amount</b></p>
+					<span  ref = { span => this.span = span } className="range-slider__value">${ Number(this.state.investedAmount).toLocaleString() }</span>
 				</div>
-			</div>
+				<div>&nbsp;</div>
+				<div className="range-slider" >		
+					<div>&nbsp;</div>
+					<input onInput={ (e) => this.sliderChange(e) } ref = { inputRange => this.inputRange = inputRange } className="range-slider__range" type="range" value={ this.state.investedAmount } min="250000" max="5000000" step="10000"/>		
+				</div>
+				<div style={{ float: 'left' }}>
+					<button style={{ marginTop: '5px', marginBottom:'5px', marginLeft:'10px' }} onClick={ this.onGenerate } className="btn btn-primary" type="submit">Create Ladder</button>
+				</div>
+				<br style={{ clear: 'both' }}/>
+				<div>&nbsp;</div>
+			</div>	
 		)
 
 	}

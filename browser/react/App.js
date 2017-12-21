@@ -33,19 +33,8 @@ class App extends Component {
   	this.createRanking = this.createRanking.bind(this);
   }
 
-  componentDidMount() {
-/*
-  	if( this.state.munis.length == 0){	 
-		axios.get('/api/munis')
-		  .then(response => response.data)
-		  .then( munis  => {
-			this.setState({ munis })
-		  })
-		  .catch(err => console.log(err));	
-	}
-*/	
+  componentDidMount() {	
 	this.setState({ munis: muniList });	
-
   }
 
   filterMaturity( filter ){
@@ -273,8 +262,8 @@ class App extends Component {
     const munis = [...this.state.munis];
     return (
       <div className="container-fluid">
-        <Nav />
-        <div style={{ marginTop: '65px' }}>
+        <Nav filterMaturity = { this.filterMaturity } generateLadder = { this.generateLadder }/>
+        <div style={{ marginTop: '100px' }}>
           <div className="row">
 
             <div className="col-sm-5">
@@ -285,10 +274,7 @@ class App extends Component {
 					<Maturity filterMaturity = { this.filterMaturity }/>
 				</div>
 
-				<div className="col-sm-2">
-					<InvestedAmount generateLadder = { this.generateLadder }/> 
-				</div>
-				
+			
 				<div className="col-sm-3">
 					<Constraint />
 				</div>	
