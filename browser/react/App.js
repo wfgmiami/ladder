@@ -10,6 +10,7 @@ import InvestedAmount from './InvestedAmount';
 import BucketAllocation from './BucketAllocation';
 import BucketSummary from './BucketSummary';
 import muniList from '../../muniList.json';
+import BucketSummaryPlaceholder from './BucketSummaryPlaceholder';
 import css from '../../assets/stylesheets/style.scss';
 
 const Promise = require('es6-promise-promise');
@@ -25,12 +26,16 @@ class App extends Component {
 		allocatedData: [],
 		allocSector: {},
 		allocRating: {},
-		investedAmount:[]
+		investedAmount: [],
+		bucketsByRows: [],
+		columns: []
 	};
 
 	this.filterMaturity = this.filterMaturity.bind(this);
 	this.generateLadder = this.generateLadder.bind(this);
   	this.createRanking = this.createRanking.bind(this);
+  	this.createRows = this.createRows.bind(this);
+	this.createColumns = this.createColumns.bind(this);
   }
 
   componentDidMount() {
@@ -115,12 +120,15 @@ class App extends Component {
 	let rankIndex = 0;
  	let oneBucketFlag = false;
 
-	let buckets = this.state.ytmLadder;
+	let buckets = [...this.state.ytmLadder];
 	this.setState({ investedAmount });
 
 	if( buckets.length !== 0 ) numBuckets = buckets.length;
 	if( buckets.length === 1 ) oneBucketFlag = true;
-
+	if( buckets.length === 0 ) {
+		alert('Please select min and max maturity for the buckets!');
+		return;
+	}
 	const bucketMoney = Number(( investedAmount / numBuckets ).toFixed(0));
 	const minAllocCheck = Number(( maxPercBond * investedAmount).toFixed(0));
 
@@ -142,7 +150,7 @@ class App extends Component {
 
 		let sector = chosenBond.sector;
 		let rating = chosenBond.rating;
-		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
+//		console.log('chosen bond, bondIndex,bucket(s), appliedRank,sector,rating', chosenBond, bondIndex, bucket,buckets, appliedRank,sector, rating);
 		if(	allocSector[sector] ){
 			allocSector[sector] += minAllocBond;
 		}else{
@@ -248,40 +256,101 @@ class App extends Component {
 //		cnt++
 			//numBuckets > 0
 	}while( numBuckets > 0 )
-
+	
+	const bucketsByRows = this.createRows( allocatedData );
+	const columns = this.createColumns();
 	//3/7 300k - good case
 //	console.log('result...', allocatedData, allocSector, allocRating, allocBucket);
+	this.setState({ columns });
+	this.setState({ bucketsByRows });
 	this.setState({ allocatedData });
 	this.setState({ allocSector });
 	this.setState({ allocRating });
   }
 
+   	createColumns(){
+		let columns = [];
+
+		for( let i = 0; i < this.state.ytmLadder.length; i++ ){
+			columns.push( { key: (this.state.ytmLadder[i]).toString(), name: ( this.state.ytmLadder[i] ) } )
+		}
+		
+		return columns;
+	}
+
+	createRows( objBuckets ){
+		const buckets = Object.keys( objBuckets );
+		const numBuckets = buckets.length;
+		let lenBucket = [];
+		let bucketsByRows = [];
+		let maxBondsInBucket = 0;
+		let rowsPerBond = 3;
+		let bond = {};
+		let row = {};
+		let bucketIndex = buckets[0];
+		//console.log('.................', bucketIndex*1 + numBuckets);
+		buckets.forEach( bucket => {
+				for(let i = 0; i < numBuckets; i++){
+					lenBucket.push( objBuckets[bucket].length );
+
+				}		
+		})
+
+		maxBondsInBucket = Math.max(...lenBucket);
+
+		for(let i = 0; i < maxBondsInBucket; i++){
+			for(let j = 0; j < rowsPerBond; j++){
+				for(let k = bucketIndex; k < numBuckets + bucketIndex*1; k++){
+					
+					bond = objBuckets[k][i];
+		
+					if( j === 0 ){						
+						row[(k).toString()] =  bond.cusip + ', ' + bond.coupon + '%, ' + bond.ytm + 'yr'; 
+					}else if( j === 1 ){
+						row[(k).toString()] =  bond.sector + ', ' + bond.rating;
+					}else if( j === 2 ){
+						row[(k).toString()] = bond.investAmt;
+					}
+					
+				}
+				bucketsByRows.push( row );
+				row = {};
+				
+			}
+		}
+
+		return bucketsByRows;
+	}
 
    render() {
-    // console.log('.....in App.js, state, props',this.state, this.props)
+  console.log('.....in App.js, this.state',this.state)
     const munis = [...this.state.munis];
     return (
       <div className="container-fluid">
         <Nav filterMaturity = { this.filterMaturity } generateLadder = { this.generateLadder }/>
           <div style={{ marginTop: '105px' }} className="row">
 
-            <div className="col-sm-9">
-            	<MuniList munis={ munis }/>
+			{ this.state.bucketsByRows.length !== 0 ?
+				<div className="col-sm-6">
+					<BucketAllocation columns = { this.state.columns } bucketsByRows = { this.state.bucketsByRows }/> 
+					<BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>
+					<div>&nbsp;</div>
+				</div>:
+				<div className="col-sm-6">
+			   		<BucketSummaryPlaceholder />
+				</div> }
+            
+			<div className="col-sm-4">
+				<MuniList munis={ munis }/>
+			</div>
+
+			<div className="col-sm-2">
+            	<Constraint />
             </div>
+			
+			<div>&nbsp;</div><div>&nbsp;</div>
 
-
-						<div className="col-sm-3">
-							<Constraint />
-						</div>
-						<div>&nbsp;</div><div>&nbsp;</div>
-
-						{ this.state.allocatedData.length != 0 ?
-							<div>
-								<BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>
-							<BucketAllocation allocatedData = { this.state.allocatedData }/> </div>: null }
-
-		 			</div>
-
+		</div>
       </div>
     );
   }

@@ -37,7 +37,7 @@ class MuniList extends React.Component{
   		
 		const total = this.state.munis.length;
 		const headerText = "Available Muni Bonds";
-console.log('.....muni list', this.state.munis);
+	//	console.log('.....muni list', this.state.munis);
 		return (
 			<div className="panel panel-default"><b>{ headerText } &nbsp; <span className="badge badge-info"> { total }</span></b>
 			<div>&nbsp;&nbsp;</div>
@@ -45,6 +45,7 @@ console.log('.....muni list', this.state.munis);
 				columns={ this._columns }
 				rowGetter = { this.rowGetter }
 				rowsCount = { total }
+				minHeight = { 500 }
 				/>		
 			</div>
 		);

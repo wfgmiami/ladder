@@ -11,7 +11,12 @@ return (
 		<tbody>
 			<tr>
 				<td className="">
-					20% max per sector / 12% for health care	
+					20% max per sector 	
+				</td>
+			</tr>		
+			<tr>
+				<td className="">
+					12% max in health care	
 				</td>
 			</tr>		
 			<tr>	
@@ -30,7 +35,7 @@ return (
 
 	<table>	
 		<thead>
-			<tr><th className="size">Rules at Bucket / Bond Level</th></tr>
+			<tr><th className="size">Rules at Bond Level</th></tr>
 		</thead>
 
 		<tbody>
@@ -60,7 +65,7 @@ return (
 	</table>
 	<table>	
 		<thead>
-			<tr><th className="size">Ranking Rules at Bond Level</th></tr>
+			<tr><th className="size">Ranking Rules</th></tr>
 		</thead>
 
 		<tbody>

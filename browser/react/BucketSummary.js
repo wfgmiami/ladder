@@ -6,7 +6,7 @@ class BucketSummary extends React.Component{
 	}
 
 	render(){
-console.log('.......',this.props);
+	console.log('bucket summary this.props.......',this.props);
 	const sectors = Object.keys(this.props.allocSector);
 	const aAndBelow = this.props.allocRating.aAndBelow;
 	const aAndLow = 'A rated & below';
