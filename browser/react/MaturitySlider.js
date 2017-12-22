@@ -6,7 +6,7 @@ class MaturitySlider extends React.Component{
 		super();
 		this.state = {
 			min: 1,
-			max: 50,
+			max: 20,
 		}
 
 	}
@@ -40,15 +40,13 @@ class MaturitySlider extends React.Component{
 	render(){
 
 		return(
-			<div className='container-fluid'>
-
+			<div>
 					<div style={{ float:'left' }} >
 						<p><b>Minimum Maturity</b></p>
 						<span className="range-slider__value">{ this.state.min } </span>
-						<div>&nbsp;</div>
 					</div>
 
-					<div className="range-slider-double" >
+					<div className="range-slider-double">
 						<div> &nbsp;</div><div>&nbsp;</div>
 						<input onInput={ (e) => this.sliderChange(e) } ref = { input => this.inputMin = input } className="range-slider-double__range" type="range" value={ this.state.min }  min="1" max="50" step="1"/>
 
@@ -59,10 +57,9 @@ class MaturitySlider extends React.Component{
 					<div style={{ marginLeft: '10px', float:'left' }}>
 						<p><b>Maximum Maturity</b></p>
 						<span className="range-slider-max__value">{ this.state.max } </span>
-						<div> &nbsp;</div>
+						<div>&nbsp;</div>
 					</div>
 
-					<br style={{ clear: 'both' }}/>
 
 			</div>
 		)

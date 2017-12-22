@@ -11,13 +11,13 @@ class MuniList extends React.Component{
 		}
 
 		this._columns = [
-			{ key: 'cusip', name: 'Cusip' },
-			{ key: 'maturity', name: 'Maturity' },
-			{ key: 'ytm', name: 'YTM' },
-			{ key: 'rating', name: 'Rating' },
-			{ key: 'sector', name: 'Sector' },
-			{ key: 'coupon', name: 'Coupon' }	
-		
+			{ key: 'cusip', name: 'Cusip', resizable: true },
+			{ key: 'maturity', name: 'Maturity', resizable: true },
+			{ key: 'ytm', name: 'YTM', resizable: true },
+			{ key: 'rating', name: 'Rating', resizable: true },
+			{ key: 'sector', name: 'Sector', resizable: true },
+			{ key: 'coupon', name: 'Coupon', resizable: true }
+
 		]
 		this.rowGetter = this.rowGetter.bind(this);
 	}
@@ -34,7 +34,7 @@ class MuniList extends React.Component{
 	}
 
 	render(){
-  		
+
 		const total = this.state.munis.length;
 		const headerText = "Available Muni Bonds";
 	//	console.log('.....muni list', this.state.munis);
@@ -46,7 +46,7 @@ class MuniList extends React.Component{
 				rowGetter = { this.rowGetter }
 				rowsCount = { total }
 				minHeight = { 500 }
-				/>		
+				/>
 			</div>
 		);
 

@@ -256,7 +256,7 @@ class App extends Component {
 //		cnt++
 			//numBuckets > 0
 	}while( numBuckets > 0 )
-	
+
 	const bucketsByRows = this.createRows( allocatedData );
 	const columns = this.createColumns();
 	//3/7 300k - good case
@@ -272,9 +272,10 @@ class App extends Component {
 		let columns = [];
 
 		for( let i = 0; i < this.state.ytmLadder.length; i++ ){
-			columns.push( { key: (this.state.ytmLadder[i]).toString(), name: ( this.state.ytmLadder[i] ) } )
+			columns.push( { key: (this.state.ytmLadder[i]).toString(),
+				name: ( this.state.ytmLadder[i] ), resizable: true } )
 		}
-		
+
 		return columns;
 	}
 
@@ -293,7 +294,7 @@ class App extends Component {
 				for(let i = 0; i < numBuckets; i++){
 					lenBucket.push( objBuckets[bucket].length );
 
-				}		
+				}
 		})
 
 		maxBondsInBucket = Math.max(...lenBucket);
@@ -301,21 +302,21 @@ class App extends Component {
 		for(let i = 0; i < maxBondsInBucket; i++){
 			for(let j = 0; j < rowsPerBond; j++){
 				for(let k = bucketIndex; k < numBuckets + bucketIndex*1; k++){
-					
+
 					bond = objBuckets[k][i];
-		
-					if( j === 0 ){						
-						row[(k).toString()] =  bond.cusip + ', ' + bond.coupon + '%, ' + bond.ytm + 'yr'; 
+
+					if( j === 0 ){
+						row[(k).toString()] =  bond.cusip + ', ' + bond.coupon + '%, ' + bond.ytm + 'yr';
 					}else if( j === 1 ){
 						row[(k).toString()] =  bond.sector + ', ' + bond.rating;
 					}else if( j === 2 ){
 						row[(k).toString()] = bond.investAmt;
 					}
-					
+
 				}
 				bucketsByRows.push( row );
 				row = {};
-				
+
 			}
 		}
 
@@ -331,23 +332,21 @@ class App extends Component {
           <div style={{ marginTop: '105px' }} className="row">
 
 			{ this.state.bucketsByRows.length !== 0 ?
-				<div className="col-sm-6">
-					<BucketAllocation columns = { this.state.columns } bucketsByRows = { this.state.bucketsByRows }/> 
+				<div className="col-sm-8">
+					<BucketAllocation columns = { this.state.columns } bucketsByRows = { this.state.bucketsByRows }/>
 					<BucketSummary investedAmt = { this.state.investedAmount } allocSector = { this.state.allocSector } allocRating = { this.state.allocRating }/>
 					<div>&nbsp;</div>
 				</div>:
-				<div className="col-sm-6">
+				<div className="col-sm-8">
 			   		<BucketSummaryPlaceholder />
 				</div> }
-            
+
 			<div className="col-sm-4">
+				<Constraint />
 				<MuniList munis={ munis }/>
 			</div>
 
-			<div className="col-sm-2">
-            	<Constraint />
-            </div>
-			
+
 			<div>&nbsp;</div><div>&nbsp;</div>
 
 		</div>

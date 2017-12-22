@@ -28,7 +28,6 @@ class AmountSlider extends React.Component {
 
 			<div>
 				<div style={{ float:'left' }}>
-
 					<p><b>Invested Amount</b></p>
 					<span className="range-slider__value">${ Number(this.state.investedAmount).toLocaleString() }</span>
 				</div>

@@ -10,8 +10,9 @@ class BucketAllocation extends React.Component{
 			bucketsByRows: []
 		}
 		this.rowGetter = this.rowGetter.bind(this);
+	  // this.rowStyle = this.rowStyle.bind(this);
 	}
-	
+
 	componentWillMount(){
 		this.setState({ columns: this.props.columns });
 		this.setState({ bucketsByRows: this.props.bucketsByRows });
@@ -32,18 +33,20 @@ class BucketAllocation extends React.Component{
 
 
 	render(){
-  		const total = this.state.bucketsByRows.length;	
+  		const total = this.state.bucketsByRows.length;
 		const headerText = "BUCKETS ALLOCATION";
 console.log('....buckets allocation render this.state.bucketsByRows',this.state.props, this.state.bucketsByRows);
 		return (
-			<div className="panel panel-default"><b>{ headerText }</b>
+			<div className="panel panel-default"><div style={{ textAlign: 'center' }}><b>{ headerText }</b></div>
 			<div>&nbsp;&nbsp;</div>
 			<ReactDataGrid
-				columns={ this.state.columns }
+				columns = { this.state.columns }
 				rowGetter = { this.rowGetter }
 				rowsCount = { total }
 				minHeight = { 500 }
-				/>		
+				minColumnWidth = { 150 }
+
+				/>
 			</div>
 		);
 
@@ -61,7 +64,7 @@ class BucketAllocation extends React.Component{
 			allocation: []
 		}
 	}
-  
+
 	render(){
 		let lenBucket = [];
 		let maxLen = 0;
@@ -77,10 +80,10 @@ class BucketAllocation extends React.Component{
 			}
 
 			for(let j = 0; j < this.props.allocatedData[bucket].length; j++){
-				totalByBucket += this.props.allocatedData[bucket][j].investAmt;	
+				totalByBucket += this.props.allocatedData[bucket][j].investAmt;
 //				console.log(this.props.allocatedData[bucket][j].investAmt)
 			}
-			totalLines.push(<td key = { keyIdx++ }>{ totalByBucket.toLocaleString() }</td>)	
+			totalLines.push(<td key = { keyIdx++ }>{ totalByBucket.toLocaleString() }</td>)
 			totalByBucket = 0;
 		})
 
@@ -102,22 +105,22 @@ class BucketAllocation extends React.Component{
 							rowLines.push(<td key = { keyIdx++ }>{ dataLine.cusip }, {dataLine.coupon}%, {dataLine.ytm}yr
 								<tr>{ dataLine.sector }, {''} { dataLine.rating }</tr>
 								<tr>${ dataLine.investAmt.toLocaleString() }</tr>
-								</td>)				
+								</td>)
 			   			}else{
 							rowLines.push(<td key = { keyIdx++ }>{ dataLine.cusip }
 								<tr>${ dataLine.investAmt.toLocaleString() }</tr>
-								</td>)	
-						}			
-						
+								</td>)
+						}
+
 					}else{
 						rowLines.push(<td key = { keyIdx++ }>{ '' }</td>)
-					}					
+					}
 				})
-	
+
 				tblData.push(<tr key={ keyIdx++ }>{ rowLines }</tr>);
 				rowLines = [];
 		}
-		
+
 		console.log('props in bucket allocation', totalInBucket, tblData, maxLen, buckets,this.props);
 		return(
 		<div>
@@ -137,7 +140,7 @@ class BucketAllocation extends React.Component{
 				{ tblData }
 			</tbody>
 			<tfoot>
-				{ totalInBucket }	
+				{ totalInBucket }
 			</tfoot>
 		  </table>
 		  </div>
