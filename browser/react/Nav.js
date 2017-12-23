@@ -35,7 +35,7 @@ class Nav extends React.Component {
           <div className="container-fluid">
             <div className="row">
 
-              <div className='col-sm-3'>
+              <div className='col-sm-2'>
                 <div className="navbar-header">
                     <button  onClick={ this.toggleNavbar } className={ `${classTwo}` } type="button" data-toggle="collapse" data-target="#navbarResponsive">
                       <span className="icon-bar" />
@@ -52,7 +52,7 @@ class Nav extends React.Component {
                     <MaturitySlider filterMaturity = { this.props.filterMaturity }/>
                 </div>
 
-                <div className="col-sm-4">
+                <div className="col-sm-5">
                   <AmountSlider generateLadder = { this.props.generateLadder }/>
                 </div>
               </div>

@@ -43,7 +43,7 @@ console.log('....buckets allocation render this.state.bucketsByRows',this.state.
 				columns = { this.state.columns }
 				rowGetter = { this.rowGetter }
 				rowsCount = { total }
-				minHeight = { 500 }
+				minHeight = { 450 }
 				minColumnWidth = { 150 }
 
 				/>

@@ -1,4 +1,64 @@
 import React from 'react';
+import ReactDataGrid  from 'react-data-grid';
+
+class BucketSummary extends React.Component{
+	constructor(props){
+		super(props);
+
+		this.state = {
+			portfolioSummary: []
+		}
+
+		this._columns = [
+			{ key: 'portfolioSummary', name: 'Portfolio Summary', resizable: true },
+			{ key: 'dollarAllocated', name: 'Dollar Allocation', resizable: true },
+			{ key: 'percentageAllocated', name: 'Percentage Allocated', resizable: true },
+			{ key: 'rule', name: 'Rule', resizable: true },
+		]
+		this.rowGetter = this.rowGetter.bind(this);
+	}
+
+	componentWillMount(){
+		console.log('.....willMount this.props', this.props);
+		this.setState({ portfolioSummary: this.props.portfolioSummary });
+	}
+
+	componentWillReceiveProps( nextProps ){
+		console.log('bucket allocation...next Props', nextProps);
+		if( nextProps.portfolioSummary !== this.state.portfolioSummary ){
+			this.setState( { portfolioSummary: nextProps.portfolioSummary } );
+		}
+	}
+
+	rowGetter( i ){
+		return this.state.portfolioSummary[i];
+	}
+
+	render(){
+
+		const total = this.state.portfolioSummary.length;
+		const headerText = "PORTFOLIO SUMMARY";
+	//	console.log('.....muni list', this.state.munis);
+		return (
+			<div className="panel panel-default"><div style = {{ textAlign: 'center' }}><b>{ headerText }</b></div>
+			<div>&nbsp;&nbsp;</div>
+			<ReactDataGrid
+				columns={ this._columns }
+				rowGetter = { this.rowGetter }
+				rowsCount = { total }
+				minHeight = { 450 }
+				/>
+			</div>
+		);
+
+	}
+}
+
+
+export default BucketSummary;
+
+/*
+import React from 'react';
 
 class BucketSummary extends React.Component{
 	constructor(props){
@@ -45,3 +105,5 @@ class BucketSummary extends React.Component{
 }
 
 export default BucketSummary;
+
+*/
