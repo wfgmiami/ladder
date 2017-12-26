@@ -13,7 +13,7 @@ class AmountSlider extends React.Component {
 
 	onGenerate(ev){
 		ev.preventDefault();
-		this.props.generateLadder(this.state.investedAmount);
+		this.props.setLadder(this.state.investedAmount);
 	}
 
 	sliderChange(e){

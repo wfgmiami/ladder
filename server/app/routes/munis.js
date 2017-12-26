@@ -1,24 +1,23 @@
 const express = require('express');
 const router = new express.Router();
-const fs = require('fs')
+const fs = require('fs');
 
-const yahooFinance = require('yahoo-finance');
-const dateFormat = require('dateformat');
-const muniData = require( '../../../muniData.json');
 module.exports = router;
+// fs.writeFile( './muni-data.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
+// 	if ( err ) throw err;
+// })
 
+// const muniData = require( '../../../muni-data.json');
+// const adjustedMuniData = createNewObject( muniData );
+
+const adjustedMuniData = require( '../../../muni-data.json');
 const currentYear = new Date().getFullYear();
-const pyShell = require("python-shell");
-
-const adjustedMuniData = createNewObject( muniData );
 
 router.get('/', (req, res, next) =>{
 	res.send( adjustedMuniData );
 })
 
-
 router.get('/filter', (req, res, next) => {
-
 	let maturityRange  = [];
 	let filteredMunis = [];
 	let minMaturity = req.query.min * 1;
@@ -29,30 +28,13 @@ router.get('/filter', (req, res, next) => {
 	}
 
 	maturityRange.forEach( maturity => {
-	
 		let tempArray = adjustedMuniData.filter( muni => {
-			   	return muni.ytm * 1 === maturity 
-				
+			   	return muni.ytm * 1 === maturity
 		});
-		
+
 		filteredMunis = filteredMunis.concat( tempArray );
 	})
-
 	res.send( filteredMunis );
-})
-
-router.get('/nasdaq/search', (req, res, next) => {
-
-	let searchedArray = [];
-	const { searchedStock } =  req.query;
-
-	nasdaqData.forEach( stock => {
-		if( stock.Name.toUpperCase().indexOf( searchedStock.toUpperCase() ) > -1 ){
-			searchedArray.push( stock );
-		}
-	})
-//	searchedArray = nasdaqData.filter( stock => stock.Name === searchedStock );
-	res.send( createNewObject( searchedArray ));
 })
 
 
@@ -62,6 +44,7 @@ function createNewObject(arr) {
 
 	arr.forEach( muni => {
 		obj.cusip = muni.CUSIP;
+		obj.price = muni['Market Price'];
 		obj.coupon = muni.Coupon;
 		obj.maturity = muni['Stated Maturity'];
 		let maturityYear = obj.maturity.slice(-4);

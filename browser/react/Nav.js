@@ -53,7 +53,7 @@ class Nav extends React.Component {
                 </div>
 
                 <div className="col-sm-5">
-                  <AmountSlider generateLadder = { this.props.generateLadder }/>
+                  <AmountSlider setLadder = { this.props.setLadder }/>
                 </div>
               </div>
 

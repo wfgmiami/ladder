@@ -4,14 +4,14 @@ class Maturity extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			min:1,
-			max:1
+			min:22,
+			max:37
 		}
 		this.onMinChange = this.onMinChange.bind(this);
 		this.onMaxChange = this.onMaxChange.bind(this);
 		this.onMaturity = this.onMaturity.bind(this);
 	}
-	
+
 	onMinChange(ev){
 		this.setState( { min: ev.target.value * 1 } );
 	}
@@ -21,7 +21,7 @@ class Maturity extends React.Component{
 	}
 
 	onMaturity(ev){
-	
+
 		if( this.state.min > this.state.max){
 			alert('Max maturity must be greater or equal to min maturity');
 		}else{
@@ -34,15 +34,15 @@ class Maturity extends React.Component{
 	}
 
 	render(){
-			
+
 		let yearsRange = [];
 		for(let i = 1; i < 31; i++){
 			yearsRange.push(i);
 		}
-		
+
 		return (
-			<form>	
-			
+			<form>
+
 			  <div className="col-sm-6">
 			  <b>Min Maturity</b>
 			  <select className="form-control" name="minMaturity" onChange = { this.onMinChange }>
@@ -52,7 +52,7 @@ class Maturity extends React.Component{
 				  }
 			  </select>
 			  </div>
-			  
+
 			  <div className="col-sm-6">
 			  <b>Max Maturity</b>
 			  <select className="form-control" name="maxMaturity" onChange = { this.onMaxChange } >
@@ -62,13 +62,13 @@ class Maturity extends React.Component{
 				  }
 			  </select>
 			  </div>
-			  <div>&nbsp;</div> 
-			  
+			  <div>&nbsp;</div>
+
 			  <button className="btn btn-default" onClick={ this.onMaturity }>Filter Bonds</button>
-			  
+
 			</form>
 		)
 	}
 }
-export default Maturity 
+export default Maturity
 

@@ -5,8 +5,8 @@ class MaturitySlider extends React.Component{
 	constructor(){
 		super();
 		this.state = {
-			min: 1,
-			max: 20,
+			min: 22,
+			max: 37,
 		}
 
 	}
