@@ -165,8 +165,9 @@ class App extends Component {
 		let idx = 0;
 		let allocateToCash = 0;
 		let sectorLimitCheck = 0;
-
+	//		console.log('Allocate - currentBondIndex ---', currentBondIndex)
 		if( args.length > 1 ){
+		
 			const allocatedDataBuckets = Object.keys(allocatedData);
 			chosenBond['investAmt'] = allocatedAmount;
 
@@ -175,9 +176,16 @@ class App extends Component {
 
 			allocatedData[bucket] ? allocatedData[bucket].push( chosenBond )
 			: allocatedData[bucket] = [chosenBond];
-
-			allocSector[sector] ?	allocSector[sector] += allocatedAmount
-			: allocSector[sector] = allocatedAmount;
+			console.log('Allocate -- allocateData[bucket], chosenBond', allocatedData[bucket].length, chosenBond);
+		
+			if(	chosenBond.cusip !== 'Cash' ){
+				allocSector[sector] ? allocSector[sector] += allocatedAmount
+				: allocSector[sector] = allocatedAmount;
+				console.log('xoxo', sector, allocSector,allocatedAmount);
+			}else{
+				console.log('allocate cusip is cash bucket, chosenBond, allocSector ---', bucket, chosenBond, allocSector)
+			}
+			let allocatedDataLength = allocatedData[bucket].length - 1;
 
 			if( rating.slice(0,2) !== 'AA' ){
 				allocRating['aAndBelow'] ? allocRating['aAndBelow'] += allocatedAmount
@@ -199,6 +207,9 @@ class App extends Component {
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= allocatedAmount;
+	
+				allocatedData[bucket].splice( allocatedDataLength, 1 );
+			//	console.log('Allocate health care allocated data after splice - allocatedData', allocatedData);
 				argsObj.bucketControl['nextBucket'] = bucket;
 				argsObj.currentBucketState.currentBondIndex--;
 
@@ -209,12 +220,12 @@ class App extends Component {
 				previousAllocatedBond = allocatedData[previousBucket];
 				minIncrementToAllocate = ( maxHealthCare - allocSector[sector] ) / ( minIncrement * ( previousAllocatedBond[0].price * 1 / 100 ) );
 
-				console.log('1...............', bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
+			//	console.log('1...............',currentBondIndex, checkBucket, bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
 
 				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement * previousAllocatedBond[0].price * 1 / 100 );
-				allocBucket[checkBucket] += minIncrementToAllocate;
+				allocBucket[previousBucket] += minIncrementToAllocate;
 				allocSector[sector] += minIncrementToAllocate;
-				bucketState[checkBucket]['investAmt'] += minIncrementToAllocate;
+//				bucketState[checkBucket]['investAmt'] += minIncrementToAllocate;
 
 				// console.log('previous....', previousAllocatedBond[0],previousAllocatedBond[0].amountAllocated,minIncrementToAllocate)
 				previousAllocatedBond[0]['investAmt'] += minIncrementToAllocate;
@@ -229,16 +240,20 @@ class App extends Component {
 				bucketState.bucketStateKeys.forEach( bucket => {
 					bucketState[bucket].currentRankIndex === 0 ? bucketState[bucket].currentRankIndex++ : null;
 				})
-				console.log('after Health Care HIT.......................',bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
+				console.log('after Health Care HIT.......................', currentBondIndex, bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
 
 			}else if( allocSector[sector] > maxSector ){
 				previousBucket = bucket;
-				allocSector[sector] -= allocatedAmount;
+				allocSector[sector] -= allocatedAmount;	
 				allocBucket[bucket] -= allocatedAmount;
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= allocatedAmount;
-
+			//	console.log('Allocate sector allocated data before splice - allocatedData', allocatedData, currentBondIndex);
+				allocatedData[bucket].splice( allocatedDataLength, 1 );
+			//	console.log('Allocate sector allocated data after splice - allocatedData', allocatedData);
+//				debugger;
+				currentBondIndex = allocatedData[bucket].length - 1;
 				do{
 					// if at first index in the bucket [0] -- must move to higher bucket
 					if( !currentBondIndex ){
@@ -262,6 +277,7 @@ class App extends Component {
 						// console.log('1.......check sector', checkSector,currentBondIndex,	bucketLastIndex, previousAllocatedBond[bucketLastIndex])
 					}else{
 						// console.log('2......check sector', currentBondIndex, allocatedData, bucket)
+
 						checkSector = allocatedData[previousBucket][--currentBondIndex].sector;
 					}
 					// console.log('3......check sector', sector, checkSector, currentBondIndex, allocatedData[bucket])
@@ -277,27 +293,28 @@ class App extends Component {
 
 				allocBucket[previousBucket] += minIncrementToAllocate;
 				allocSector[sector] += minIncrementToAllocate;
-				bucketState[previousBucket]['investAmt'] += minIncrementToAllocate;
+				//bucketState[previousBucket]['investAmt'] += minIncrementToAllocate;
 
 				// console.log('previous....', previousAllocatedBond[0],previousAllocatedBond[0].amountAllocated,minIncrementToAllocate)
 				previousAllocatedBond[currentBondIndex]['investAmt'] += minIncrementToAllocate;
 				if( previousAllocatedBond[currentBondIndex].rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] += minIncrementToAllocate;
 
-				console.log('after Sector HIT.......................',bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
-
+				console.log('Sector limits HIT.......................',bucket, argsObj, allocSector,allocBucket,allocatedData,bucketState)
+				console.log('...........................////////////', allocatedData[bucket]);
 			}
 
 			if( allocBucket[bucket] >= bucketMoney ){
 
 				allocSector[sector] -= allocatedAmount;
+			if(sector==='IDB/IDR') console.log('xoxo.....',sector, allocatedAmount,allocSector[sector])	
 				allocBucket[bucket] -= allocatedAmount;
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= allocatedAmount;
 
-				idx = allocatedData[bucket].length - 2;
+				idx = allocatedData[bucket].length - 1;
 				previousAllocatedBond = allocatedData[bucket][idx];
-
+				console.log('...........', previousAllocatedBond, idx, allocatedData[bucket],bucket);
 				sectorLimitCheck = allocSector[previousAllocatedBond.sector]
 
 				minIncrementToAllocate = ( bucketMoney - allocBucket[bucket] ) / ( minIncrement * ( previousAllocatedBond.price * 1 / 100 ) );
@@ -314,7 +331,7 @@ class App extends Component {
 
 					chosenBond['cusip'] = 'Cash';
 					chosenBond['investAmt'] = allocateToCash;
-
+					allocSector['Cash'] += allocateToCash;
 					allocBucket[bucket] += minIncrementToAllocate;
 					bucketState[bucket]['investAmt'] += minIncrementToAllocate;
 
@@ -326,18 +343,19 @@ class App extends Component {
 
 					allocBucket[bucket] += minIncrementToAllocate;
 					allocSector[sector] += minIncrementToAllocate;
-					bucketState[bucket]['investAmt'] += minIncrementToAllocate;
+//					bucketState[bucket]['investAmt'] += minIncrementToAllocate;
 
 					// console.log('previous....', previousAllocatedBond[0],previousAllocatedBond[0].amountAllocated,minIncrementToAllocate)
 					previousAllocatedBond['investAmt'] += minIncrementToAllocate;
 					if( previousAllocatedBond.rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] += minIncrementToAllocate;
 
-
-					console.log('BUCKETS HIT.........', bucket, allocatedData, argsObj.currentBucketState, allocBucket, currentBondIndex, allocBucket[bucket],bucketMoney, previousAllocatedBond);
-
-					allocateToCash = bucketMoney - minIncrementToAllocate;
+					allocateToCash = bucketMoney - allocBucket[bucket];
 					chosenBond['cusip'] = 'Cash';
 					chosenBond['investAmt'] = allocateToCash;
+					allocSector['Cash'] += allocateToCash;
+					console.log('BUCKETS HIT.........', bucketMoney, minIncrementToAllocate,bucket,bucketState,chosenBond, allocatedData, argsObj.currentBucketState, allocBucket, currentBondIndex, allocBucket[bucket],bucketMoney, previousAllocatedBond);
+
+
 
 				}
 				idx = argsObj.buckets.indexOf( bucket );
@@ -389,6 +407,7 @@ class App extends Component {
 			filled = true;
 			argsObj.chosenBond = null;
 			console.log('splicing.....rank=ranking.length: argsObj--', argsObj)
+			
 			return argsObj;
 		}
 
@@ -417,18 +436,18 @@ class App extends Component {
 			// 25 000 * price < bucket money
 			// !!!!!!!!!!!!!!!!!!!!!before switching ranking keep checking with the rest of the bonds
 			argsObj = lookForBondInDiffRanking( argsObj )
-			console.log('.....RETURN FROM NOT NOT in limit size, ARGSOBJchosen bond---', argsObj)
+			console.log('Limit size - minAlloc*price > max perc * inv amt - chosen bond---', argsObj)
 			return argsObj;
 		}else{
 			// console.log('.....bond in limit size, chosen bond---', chosenBond)
 
 			allocatedAmount = Number((minAllocBond * price / 100).toFixed(2));
 			argsObj.allocatedAmount = allocatedAmount;
-
+			console.log('Limit size before calling allocatedData- will update currentBucketState allocRating, allocSector, amtAlloc-  argsObj----', argsObj);
 			this.allocateData( argsObj );
 
 			argsObj.currentBucketState.currentBondIndex++;
-
+			// bond index increased and then generateLadder will call allocate data again
 			return argsObj;
 		}
 
@@ -445,12 +464,12 @@ class App extends Component {
 		let numBuckets = 1;
 		let currentRankIndex = 0;
 		let startIndex = 0;
+		let allocateToCash = 0;
 		let rating = '';
 		let sector = '';
 		let chosenBond = [];
 		let arrBucketsToRemove = [];
-		let buckets = this.state.ytmLadder;
-		// let bucketsToRemove = {};
+		let buckets = [...this.state.ytmLadder];
 		let allocSector =  {};
 		let allocRating = {};
 		let allocBucket = {};
@@ -474,14 +493,15 @@ class App extends Component {
 
 		let bucketIndex = numBuckets - 1;
 		let bucket = buckets[bucketIndex];
-		console.log('//////////////////muniData, bucketState---', muniData, bucketState);
+		allocSector['Cash'] = 0;
+		console.log('Before the loop begins - muniData bucketState------', muniData, bucketState );
 
 	do{
 
 		currentRankIndex = bucketState[bucket]['currentRankIndex'];
 		currentBondIndex = bucketState[bucket]['currentBondIndex'];
 		chosenBond = muniData[bucket][ranking[currentRankIndex]][currentBondIndex];
-		console.log("..................", bucket, buckets,bucketIndex)
+		console.log("Start Of Loop - bucket, buckets, bucketIdx, bondIdx, rankIdx----", bucket, buckets, bucketIndex, currentBondIndex, currentRankIndex)
 
 		argsObj = { muniBondInBucket: muniData[bucket], bucket, bucketMoney, currentBucketState: bucketState[bucket],  bucketState, chosenBond, bucketControl, buckets };
 
@@ -491,20 +511,21 @@ class App extends Component {
 
 			if( chosenBond ){
 				argsObj = this.checkBondForLimitSize( argsObj );
-				console.log('chosen from diff ranking after Look for Bond In Diff Ranking', argsObj.chosenBond)
+				console.log('chosenBond from diff ranking after look for Bond In Diff Ranking', argsObj.chosenBond)
 				this.allocateData( argsObj, allocatedData, allocBucket, allocSector, allocRating, allocState, bucketState, bucket )
 				// console.log(".......COMING FROM HEALTH CARE......bucket", bucket)
 			}else{
 				// bucketsToRemove[bucket] = bucket;
 				idx = buckets.indexOf( bucket );
 				buckets.splice( idx, 1 );
-				// bucketIndex = idx - 1;
-				console.log('splicing.......in main sub', bucket, idx, buckets, bucketIndex);
-				// numBuckets = buckets.length;
-				// if( numBuckets != 0 ){
-				// 	bucket--;
-				// }
-				// if( numBuckets === 0 ) break;
+				allocateToCash = bucketMoney - allocBucket[bucket];
+				chosenBond = {};
+				chosenBond['cusip'] = 'Cash';
+				chosenBond['investAmt'] = allocateToCash;
+				allocSector['Cash'] += allocateToCash;
+				allocatedData[bucket].push( chosenBond )
+
+			//	console.log('splicing.......in main sub- bucket, idx, buckets, bucketIdx, chosenBond --- ', bucket, idx, buckets, bucketIndex, chosenBond);
 			}
 
 		}else{
@@ -519,38 +540,27 @@ class App extends Component {
 				// if( argsObj.bucket === '37' ) console.log('....................37........', allocBucket[bucket], argsObj)
 			}
 
-			console.log('argsObj, bucketState after Return from limit check, in ranking', cnt + '-' + bucket, argsObj, bucketState, allocBucket, allocSector, allocRating, allocatedData)
+			console.log('Return from limit check bound found in Rank - bucket, argsObj, bucketState, allocBucket, allocSector, allocRating, allocatedData---', bucket, argsObj, bucketState, allocBucket, allocSector, allocRating, allocatedData)
 		}
 
 		numBuckets = buckets.length;
 
-		console.log('.....numBuckets', numBuckets, bucket, bucketIndex)
+		console.log('Before buckets change-numBuckets, bucket, bucketIdx, bucketControl --- ', numBuckets, bucket, bucketIndex, bucketControl)
 		if( bucketControl['nextBucket'] ){
 			// case when health care was allocated to previous bucket => do not change bucket
 			bucketControl['nextBucket'] = null;
 		}else{
 
-			if( bucketIndex === 0 && numBuckets > 1 ){
+			if( ( bucketIndex === 0 &&  numBuckets > 1 ) || ( numBuckets === 1 ) ){
 				bucketIndex = numBuckets - 1;
 				bucket = buckets[bucketIndex];
 			}else if( bucketIndex === 0 && numBuckets === 1 ){
-				console.log('one bucket only................')
+				console.log('one bucket only..............remain the same')
 			}else if( numBuckets > 1 ){
 				bucket = buckets[--bucketIndex]
 			}
-			// // curr=22 and [22,23,24..]
-			// if( (buckets[idx]) < buckets[0] && numBuckets > 1){
-			// 	bucket = buckets[numBuckets - 1];
-			// // curr=24 and [22,23,24,25..]
-			// }else if( numBuckets > 1 ){
-			// 	idx = buckets.indexOf(bucket);
-			// 	bucket--;
-			// // curr=22 and [22]
-			// }else if( numBuckets === 1 ){
-			// 	console.log('one bucket only................ss')
-			// }
+		
 		}
-
 
 		// arrBucketsToRemove = Object.keys( bucketsToRemove );
 
@@ -562,8 +572,6 @@ class App extends Component {
 		// 	bucketsToRemove = {};
 		// }
 
-
-
 	}while( numBuckets > 0 )
 
 	const fields = Object.keys( allocRating );
@@ -571,9 +579,11 @@ class App extends Component {
 	fields.forEach( field => {
 		allocSector[field] = allocRating[field];
 	})
+	console.log('FINAL.....allocSector, allocatedData', allocSector, allocatedData);
 	const portfolioSummary = this.createSummary( allocSector );
 	const bucketsByRows = this.createRows( allocatedData );
 	const columns = this.createColumns();
+	console.log('SET FOR SHOW.....summary,rows,columns', portfolioSummary, bucketsByRows, columns);
 
 	this.setState({ columns });
 	this.setState({ bucketsByRows });
@@ -588,6 +598,7 @@ class App extends Component {
 		let fields = Object.keys( summary );
 		let portfolioSummary = [];
 		let rowObj = {};
+		let arrangedPortfolioSummary = [];
 		const columnFields = [ 'portfolioSummary', 'dollarAllocated', 'percentageAllocated', 'rule' ];
 
 		// console.log('.............summary', summary, this.state);
@@ -600,15 +611,17 @@ class App extends Component {
 				rowObj[columnFields[3]] = '<= 12%';
 			}else if( field === 'aAndBelow' ){
 				rowObj[columnFields[3]] = '<= 30%';
-			}else{
+			}else if( field !== 'Cash' ){
 				rowObj[columnFields[3]] = '<= 20%';
 			}
+
 			portfolioSummary.push( rowObj );
 			rowObj = {};
 		})
 
-		// console.log('........portfolioSummary', portfolioSummary);
-		return portfolioSummary;
+		arrangedPortfolioSummary = portfolioSummary.filter( obj => obj.portfolioSummary !== 'Cash' ).concat( portfolioSummary.filter ( obj => obj.portfolioSummary == 'Cash' ) );
+	
+		return arrangedPortfolioSummary;
 	}
 
 	createColumns(){
