@@ -167,7 +167,7 @@ class App extends Component {
 		let sectorLimitCheck = 0;
 	//		console.log('Allocate - currentBondIndex ---', currentBondIndex)
 		if( args.length > 1 ){
-		
+
 			const allocatedDataBuckets = Object.keys(allocatedData);
 			chosenBond['investAmt'] = allocatedAmount;
 
@@ -177,13 +177,12 @@ class App extends Component {
 			allocatedData[bucket] ? allocatedData[bucket].push( chosenBond )
 			: allocatedData[bucket] = [chosenBond];
 			console.log('Allocate -- allocateData[bucket], chosenBond', allocatedData[bucket].length, chosenBond);
-		
+
 			if(	chosenBond.cusip !== 'Cash' ){
 				allocSector[sector] ? allocSector[sector] += allocatedAmount
 				: allocSector[sector] = allocatedAmount;
-				console.log('xoxo', sector, allocSector,allocatedAmount);
 			}else{
-				console.log('allocate cusip is cash bucket, chosenBond, allocSector ---', bucket, chosenBond, allocSector)
+				// console.log('allocate cusip is cash bucket, chosenBond, allocSector ---', bucket, chosenBond, allocSector)
 			}
 			let allocatedDataLength = allocatedData[bucket].length - 1;
 
@@ -207,7 +206,7 @@ class App extends Component {
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= allocatedAmount;
-	
+
 				allocatedData[bucket].splice( allocatedDataLength, 1 );
 			//	console.log('Allocate health care allocated data after splice - allocatedData', allocatedData);
 				argsObj.bucketControl['nextBucket'] = bucket;
@@ -244,7 +243,7 @@ class App extends Component {
 
 			}else if( allocSector[sector] > maxSector ){
 				previousBucket = bucket;
-				allocSector[sector] -= allocatedAmount;	
+				allocSector[sector] -= allocatedAmount;
 				allocBucket[bucket] -= allocatedAmount;
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
@@ -305,16 +304,20 @@ class App extends Component {
 
 			if( allocBucket[bucket] >= bucketMoney ){
 
+				if(sector==='Toll Roads') {
+					console.log('toll', allocatedData[bucket], bucket, sector,allocBucket[bucket], allocatedAmount, allocSector[sector], allocSector)
+				}
 				allocSector[sector] -= allocatedAmount;
-			if(sector==='IDB/IDR') console.log('xoxo.....',sector, allocatedAmount,allocSector[sector])	
+
 				allocBucket[bucket] -= allocatedAmount;
 				argsObj.currentBucketState.amountAllocated -= allocatedAmount;
 				chosenBond['investAmt'] -= allocatedAmount;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= allocatedAmount;
-
-				idx = allocatedData[bucket].length - 1;
+				// look to allocate 5000 to the previously allocated bond - should have at least one bond
+				// already allocated, otherwise it cannot > bucket money
+				idx = allocatedData[bucket].length - 2;
 				previousAllocatedBond = allocatedData[bucket][idx];
-				console.log('...........', previousAllocatedBond, idx, allocatedData[bucket],bucket);
+
 				sectorLimitCheck = allocSector[previousAllocatedBond.sector]
 
 				minIncrementToAllocate = ( bucketMoney - allocBucket[bucket] ) / ( minIncrement * ( previousAllocatedBond.price * 1 / 100 ) );
@@ -322,7 +325,8 @@ class App extends Component {
 				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement * previousAllocatedBond.price * 1 / 100 );
 
 				sectorLimitCheck += minIncrementToAllocate;
-				console.log('........check sectors....', sectorLimitCheck, maxHealthCare);
+				console.log('Bucket > limit checking previous bond sector --- prevAllocBond, idx, bucket, allocData[bucket], sectorLimitCheckt', previousAllocatedBond, idx, bucket, allocatedData[bucket],sectorLimitCheck);
+
 
 				if( ( previousAllocatedBond.sector === 'Health Care' && sectorLimitCheck >= maxHealthCare )
 				|| ( sectorLimitCheck >= maxSector ) ){
@@ -407,7 +411,7 @@ class App extends Component {
 			filled = true;
 			argsObj.chosenBond = null;
 			console.log('splicing.....rank=ranking.length: argsObj--', argsObj)
-			
+
 			return argsObj;
 		}
 
@@ -559,7 +563,7 @@ class App extends Component {
 			}else if( numBuckets > 1 ){
 				bucket = buckets[--bucketIndex]
 			}
-		
+
 		}
 
 		// arrBucketsToRemove = Object.keys( bucketsToRemove );
@@ -620,7 +624,7 @@ class App extends Component {
 		})
 
 		arrangedPortfolioSummary = portfolioSummary.filter( obj => obj.portfolioSummary !== 'Cash' ).concat( portfolioSummary.filter ( obj => obj.portfolioSummary == 'Cash' ) );
-	
+
 		return arrangedPortfolioSummary;
 	}
 
@@ -680,7 +684,7 @@ class App extends Component {
 								row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
 
 							}else{
-								row[(k).toString()] = bond.sector + ', ' + bond.rating;
+								row[(k).toString()] = bond.sector + ', ' + bond.rating + ', ' + bond.price;
 							}
 						}else if( j === 2 && bond.cusip !== 'Cash' ){
 							row[(k).toString()] = '$' + bond.investAmt.toLocaleString();

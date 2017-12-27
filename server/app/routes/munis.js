@@ -3,15 +3,18 @@ const router = new express.Router();
 const fs = require('fs');
 
 module.exports = router;
-// fs.writeFile( './muni-data.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
-// 	if ( err ) throw err;
-// })
+const currentYear = new Date().getFullYear();
 
 // const muniData = require( '../../../muni-data.json');
 // const adjustedMuniData = createNewObject( muniData );
 
-const adjustedMuniData = require( '../../../muni-data.json');
-const currentYear = new Date().getFullYear();
+// fs.writeFile( './muni-list.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
+// 	if ( err ) throw err;
+// 	console.log('done')
+// })
+
+
+const adjustedMuniData = require( '../../../muni-list.json');
 
 router.get('/', (req, res, next) =>{
 	res.send( adjustedMuniData );
@@ -52,6 +55,8 @@ function createNewObject(arr) {
 		if (obj.ytm < 0) obj.ytm = 0;
 		obj.sector = muni['Holdings Sector'];
 		obj.rating = muni['Opinion Internal Rating'];
+		obj.state = muni.State;
+		obj.lastTraded = muni.LastTraded;
 		munis.push(obj)
 		obj= {};
 	})
