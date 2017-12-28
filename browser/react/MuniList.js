@@ -13,13 +13,14 @@ class MuniList extends React.Component{
 		this._columns = [
 			{ key: 'cusip', name: 'Cusip', resizable: true },
 			{ key: 'price', name: 'Price', resizable: true },
-			{ key: 'maturity', name: 'Maturity', resizable: true },
+			{ key: 'state', name: 'State', resizable: true },
 			{ key: 'ytm', name: 'YTM', resizable: true },
 			{ key: 'rating', name: 'Rating', resizable: true },
 			{ key: 'sector', name: 'Sector', resizable: true },
-			{ key: 'coupon', name: 'Coupon', resizable: true }
-
+			{ key: 'coupon', name: 'Coupon', resizable: true },
+			{ key: 'maturity', name: 'Maturity', resizable: true },
 		]
+
 		this.rowGetter = this.rowGetter.bind(this);
 	}
 
