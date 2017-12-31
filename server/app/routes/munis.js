@@ -5,16 +5,16 @@ const fs = require('fs');
 module.exports = router;
 const currentYear = new Date().getFullYear();
 
-// const muniData = require( '../../../muni-data.json');
+// const muniData = require( '../../../muniList.json');
 // const adjustedMuniData = createNewObject( muniData );
 
-// fs.writeFile( './muni-list.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
+// fs.writeFile( './muniData.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
 // 	if ( err ) throw err;
 // 	console.log('done')
 // })
 
 
-const adjustedMuniData = require( '../../../muni-list.json');
+const adjustedMuniData = require( '../../../muniData.json');
 
 router.get('/', (req, res, next) =>{
 	res.send( adjustedMuniData );
