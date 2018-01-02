@@ -288,7 +288,7 @@ class App extends Component {
 		}
 
 		if( ( sector === 'Health Care' && allocSector[sector] > maxHealthCare ) || allocSector[sector] > maxSector ){
-			debugger;
+		//	debugger;
 			maxSectorHit = true;
 			sector === 'Health Care' ? bucketInfo.calledBy = 'HealthCare' : bucketInfo.calledBy = 'sector';
 				this.handleLimit( bucketInfo );
@@ -305,7 +305,7 @@ class App extends Component {
 		}
 
 		if( allocRating['aAndBelow'] >= maxAandBelow ){
-			debugger;
+			//debugger;
 			maxAandBelowHit = true;
 			bucketInfo.calledBy = 'aAndBelow';
 			this.handleLimit( bucketInfo );
@@ -318,14 +318,16 @@ class App extends Component {
 
 			if( maxSectorHit || maxAandBelowHit || maxStateHit ){
 				adjustedBond = !bucketInfo.sectorAdjustedBond ? ( !bucketInfo.stateAdjustedBond ? ( !bucketInfo.aAndBelowAdjustedBond ? null : bucketInfo.aAndBelowAdjustedBond ) : bucketInfo.stateAdjustedBond ) : bucketInfo.sectorAdjustedBond;
-
+				if( !adjustedBond ){
+					adjustedBond = allocatedData[bucket][allocatedData[bucket].length - 1];
+				}
 				let amountToRemove = adjustedBond['investAmt'];
 				allocSector[sector] -= amountToRemove;
 				allocBucket[bucket] -= amountToRemove;
 				adjustedBond['investAmt'] -= amountToRemove;
 				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= amountToRemove;
 				argsObj.currentBucketState.amountAllocated -= amountToRemove;
-				minIncrementToAllocate = ( bucketMoney - allocBucket[bucket] ) / ( minIncrement * (  sectorAdjustedBond.price * 1 / 100 ) );
+				minIncrementToAllocate = ( bucketMoney - allocBucket[bucket] ) / ( minIncrement * (  adjustedBond.price * 1 / 100 ) );
 				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement *  adjustedBond.price * 1 / 100 );
 				allocBucket[bucket] += minIncrementToAllocate;
 				allocSector[sector] += minIncrementToAllocate;
@@ -359,7 +361,7 @@ class App extends Component {
 
 				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement * previousAllocatedBond.price * 1 / 100 );
 
-
+console.log('............previsou', previousAllocatedBond);
 				sectorLimitCheck += minIncrementToAllocate;
 				if( previousAllocatedBond.state === 'NY' ) nyStateLimitCheck += minIncrementToAllocate;
 				if( previousAllocatedBond.state === 'CA' ) caStateLimitCheck += minIncrementToAllocate;
@@ -520,7 +522,7 @@ class App extends Component {
 			}
 
 			if( calledBy === 'aAndBelow' ){
-				checkRating = allocatedData[checkBucket][allocatedDataLength].rating;
+				checkRating = allocatedData[checkBucket][allocatedDataLength].rating.slice(0,2);
 				if( checkRating !== 'AA' ) checkRatingOrState = true;
 			}else if(  calledBy === 'NY' || calledBy === 'CA' ){
 				checkState = allocatedData[checkBucket][allocatedDataLength].state;
@@ -706,7 +708,7 @@ class App extends Component {
 		console.log('Before the loop begins - muniData bucketState------', muniData, bucketState );
 
 		do{
-			// debugger;
+			debugger;
 			currentRankIndex = bucketState[bucket]['currentRankIndex'];
 			currentBondIndex = bucketState[bucket]['currentBondIndex'];
 
@@ -739,7 +741,7 @@ class App extends Component {
 					}
 
 					if( allocatedData[bucket] ) allocatedData[bucket].push( chosenBond )
-					else allocatedData[bucket] = chosenBond;
+					else allocatedData[bucket] = [chosenBond];
 					idx = buckets.indexOf( bucket );
 					buckets.splice( idx, 1 );
 
@@ -755,7 +757,7 @@ class App extends Component {
 					chosenBond['investAmt'] = bucketMoney;
 					allocSector['Cash'] += bucketMoney;
 					if( allocatedData[bucket] ) allocatedData[bucket].push( chosenBond )
-					else allocatedData[bucket] = chosenBond;
+					else allocatedData[bucket] = [chosenBond];
 					idx = buckets.indexOf( bucket );
 					buckets.splice( idx, 1 );
 				}else{
@@ -914,9 +916,9 @@ class App extends Component {
 		let bucketIndex = buckets[0];
 		//console.log('.................', bucketIndex*1 + numBuckets);
 		buckets.forEach( bucket => {
-				for( let i = 0; i < numBuckets; i++ ){
+			//	for( let i = 0; i < numBuckets; i++ ){
 					lenBucket.push( objBuckets[bucket].length );
-				}
+			//	}
 
 				for( let j = 0; j < objBuckets[bucket].length; j++ ){
 					totalInBucket += objBuckets[bucket][j].investAmt;
