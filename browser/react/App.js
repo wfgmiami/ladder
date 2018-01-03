@@ -55,6 +55,7 @@ class App extends Component {
 		this.checkBondForLimitSize = this.checkBondForLimitSize.bind(this);
 		this.allocateData = this.allocateData.bind(this);
 		this.handleLimit = this.handleLimit.bind(this);
+		this.allocateCash = this.allocateCash.bind(this);
   }
 
   componentDidMount() {
@@ -241,7 +242,7 @@ class App extends Component {
 
 		allocatedData[bucket] ? allocatedData[bucket].push( chosenBond )
 		: allocatedData[bucket] = [chosenBond];
-
+if( chosenBond.cusip == 'Cash' ) debugger;
 		if(	chosenBond.cusip !== 'Cash' ){
 			allocSector[sector] ? allocSector[sector] += allocatedAmount
 			: allocSector[sector] = allocatedAmount;
@@ -609,6 +610,13 @@ console.log('............previsou', previousAllocatedBond);
 
 		while( !chosenBond && currentRankIndex < ranking.length - 1 ){
 			chosenBond = muniData[ranking[++currentRankIndex]][currentBondIndex];
+/*
+			if( muniData[ranking[++currentRankIndex]][currentBondIndex] ){
+				chosenBond = Object.assign( {}, muniData[ranking[++currentRankIndex]][currentBondIndex] );
+			}else{
+				chosenBond = null;
+			}
+*/		
 		}
 		if( !chosenBond ){
 			return argsObj;
@@ -690,7 +698,7 @@ console.log('............previsou', previousAllocatedBond);
 		const allocatedData = {};
 
 		const ranking = this.state.ranking;
-		const muniData = this.state.rankedMuniList;
+		let muniData = [...this.state.rankedMuniList];
 		const investedAmount = this.state.investedAmount;
 		let bucketState = Object.assign({}, bucketsObj);
 
@@ -708,12 +716,16 @@ console.log('............previsou', previousAllocatedBond);
 		console.log('Before the loop begins - muniData bucketState------', muniData, bucketState );
 
 		do{
-			debugger;
+//debugger;
 			currentRankIndex = bucketState[bucket]['currentRankIndex'];
 			currentBondIndex = bucketState[bucket]['currentBondIndex'];
-
+//			if(bucket === 4 &&  currentRankIndex ===3) debugger;
 			if( currentRankIndex < ranking.length ){
-				chosenBond = muniData[bucket][ranking[currentRankIndex]][currentBondIndex];
+		//		if( muniData[bucket][ranking[currentRankIndex]][currentBondIndex] ){
+					chosenBond = muniData[bucket][ranking[currentRankIndex]][currentBondIndex];
+		//		}else{
+		//			chosenBond = null;
+		//		}
 				console.log("Start Of Loop - bucket, buckets, bucketIdx, bondIdx, rankIdx----", bucket, buckets, bucketIndex, currentBondIndex, currentRankIndex)
 
 				argsObj = { muniBondInBucket: muniData[bucket], bucket, bucketMoney, currentBucketState: bucketState[bucket],  bucketState, chosenBond, bucketControl, buckets, ranking: ranking[currentRankIndex] };
@@ -810,6 +822,10 @@ console.log('............previsou', previousAllocatedBond);
 			//numBuckets > 0
 		}while( numBuckets > 0 )
 
+		
+		this.allocateCash( allocatedData, allocSector, allocRating, allocState );
+			
+		
 		let fields = Object.keys( allocRating );
 		fields.forEach( field => {
 			allocSector[field] = allocRating[field];
@@ -834,6 +850,90 @@ console.log('............previsou', previousAllocatedBond);
 		this.setState({ portfolioSummary });
 
   }
+
+  	allocateCash( allocatedData, allocSector, allocRating, allocState ){
+		const investedAmount = this.state.investedAmount;
+		const maxHealthCare = this.state.maxHealthCare * investedAmount;
+		const maxSector = this.state.maxSector * investedAmount;
+		const maxNYState = this.state.maxNYState * investedAmount;
+		const maxCAState = this.state.maxCAState * investedAmount;
+		const maxAandBelow = this.state.maxRating * investedAmount;
+		const minIncrement = this.state.minIncrement;
+		let buckets = [...this.state.ytmLadder];
+		let allocatedCash = 0;
+		let bucketLength = 0;
+		
+		let price = 0;
+		let rating = null;
+		let sector = null;
+		let state = null;
+		let minIncrementToAllocate = 0;
+		let allocationLimit = 0;
+		let currentAllocation = 0;
+		let leftRoom = 0;
+		debugger;
+
+		buckets.forEach( bucketNumber => {
+			let bucket = allocatedData[bucketNumber];	
+			bucketLength = bucket.length - 1;
+			allocatedCash = bucket[bucketLength].investAmt;		
+
+			for( let i = 0; i < bucketLength; i++ ){
+				
+				price = bucket[i].price;
+				sector = bucket[i].sector;	
+				allocationLimit = maxSector - allocSector[sector];
+				currentAllocation = allocSector[sector];
+	
+				if( bucket[i].rank === 'HealthCare' ){
+	 				leftRoom = maxHealthCare - allocSector[sector];
+ 					if( allocationLimit > leftRoom ){
+						allocationLimit = leftRoom;
+						currentAllocation = allocSector[sector]
+					}
+				}
+				if( bucket[i].rank === 'nyRated' ){
+			   		leftRoom = maxNYState - allocState['NY'];
+					if( allocationLimit > leftRoom ){
+						allocationLimit = leftRoom;
+						currentAllocation = allocState['NY']
+					}
+
+				}
+				if( bucket[i].rank === 'caRated' ){
+					leftRoom = maxCAState - allocState['CA'];
+					if( allocationLimit > leftRoom ){
+						allocationLimit = leftRoom;
+						currentAllocation = allocState['CA']
+					}
+				}
+				if( bucket[i].rank === 'aRated' ){
+					leftRoom = maxAandBelow - allocRating['aAndBelow'];	
+					if( allocationLimit > leftRoom ){
+						allocationLimit = leftRoom;
+						currentAllocation = allocRating['aAndBelow']
+					}
+
+				}
+				
+				minIncrementToAllocate = ( allocatedCash ) / ( minIncrement * ( price * 1 / 100 ) );
+				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement * ( price * 1 / 100 ) );
+
+				if( minIncrementToAllocate > 0 && minIncrementToAllocate <= allocationLimit ){
+					bucket[bucketLength].investAmt = allocatedCash - minIncrementToAllocate;	
+					bucket[i].investAmt += minIncrementToAllocate;	
+					if( bucket[i].state === 'NY' ) allocState['NY'] += minIncrementToAllocate;
+					if( bucket[i].state === 'CA' ) allocState['CA'] += minIncrementToAllocate;
+					if( bucket[i].rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] += minIncrementToAllocate;	
+					allocSector[sector] += minIncrementToAllocate;
+					allocSector.Cash -= allocatedCash;
+					allocSector.Cash += bucket[bucketLength].investAmt;
+					allocatedCash = bucket[bucketLength].investAmt;
+
+				}
+			}
+		})
+	}
 
 	createSummary( summary ){
 		let fields = Object.keys( summary );
