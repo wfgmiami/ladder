@@ -83,7 +83,14 @@ class App extends Component {
 		axios.get(url, { params: filter })
 			.then( response => response.data )
 			.then( munis => {
-				this.setState( { munis } );
+				if( this.state.ytmLadder[0] === 1 ){
+					const oneYearPriceFilter = munis.filter( muni => {
+						if( muni.price >= 100 && muni.price <= 105 ) return muni;
+					})
+					this.setState( { munis: oneYearPriceFilter } );
+				}else{
+					this.setState( { munis } );
+				}
 			})
 			.then( () => this.createRanking() )
 			.catch( err => console.log( err ) );
@@ -103,7 +110,8 @@ class App extends Component {
 		let sortedByTrade = {};
 		let sortedByTradeMunis = [];
 
-		ladderBuckets.forEach( bucket => {
+
+		ladderBuckets.forEach( bucket => {	
 			let munis = this.state.munis.filter( muni => muni.ytm == bucket );
 			let healthCareMunis = munis.filter( muni => muni.sector == 'Health Care' );
 			healthCareMunis.forEach( hcMuni => hcMuni.rank = 'HealthCare' );
@@ -551,7 +559,7 @@ class App extends Component {
 			}else if(  calledBy === 'NY' || calledBy === 'CA' ){
 				checkState = allocatedData[checkBucket][allocatedDataLength].state;
 				if( checkState === state ) checkRatingOrState = true;
-			}else if( calledBy === 'sector' ){
+			}else if( calledBy === 'sector' || calledBy === 'HealthCare' ){
 				checkSector = allocatedData[checkBucket][allocatedDataLength].sector;
 				if( checkSector === sector ) checkRatingOrState = true;
 			}
@@ -734,7 +742,7 @@ class App extends Component {
 		do{
 			currentRankIndex = bucketState[bucket]['currentRankIndex'];
 			currentBondIndex = bucketState[bucket]['currentBondIndex'];
-			if(bucket===2 && currentBondIndex===47) debugger;
+//			if(bucket===14 && currentBondIndex===0) debugger;
 
 			if( currentRankIndex < ranking.length ){
 
@@ -830,7 +838,7 @@ class App extends Component {
 			//numBuckets > 0
 		}while( numBuckets > 0 )
 
-		console.log('.reducer',this.state.cashReducer);
+		
 		if( this.state.cashReducer === 'Yes' )
 			this.allocateCash( allocatedData, allocSector, allocRating, allocState );
 
@@ -845,7 +853,7 @@ class App extends Component {
 			allocSector[field] = allocState[field]
 		})
 
-		console.log('FINAL.....allocSector, allocatedData', allocSector, allocatedData);
+		console.log('FINAL.....allocSector, allocatedData----', allocSector, allocatedData);
 		const portfolioSummary = this.createSummary( allocSector );
 		const bucketsByRows = this.createRows( allocatedData );
 		const columns = this.createColumns();
@@ -922,7 +930,7 @@ class App extends Component {
 						currentAllocation = allocState['CA']
 					}
 				}
-				if( bucket[i].rank === 'aRated' ){
+				if( bucket[i].rank === 'aRated' || bucket[i].rating.slice(0,2) !== 'AA' ){
 					leftRoom = maxAandBelow - allocRating['aAndBelow'];
 					if( allocationLimit > leftRoom ){
 						allocationLimit = leftRoom;
@@ -948,7 +956,7 @@ class App extends Component {
 				}
 			}
 
-			if( allocatedCash >= 4000){
+			if( allocatedCash > 0){
 
 				do{
 					for( let i = 0; i <  munis[bucketNumber][ranking[rankIndex]].length; i++ ){
@@ -980,7 +988,7 @@ class App extends Component {
 								currentAllocation = allocState['CA']
 							}
 						}
-						if( testBond.rank === 'aRated' ){
+						if( testBond.rank === 'aRated' || testBond.rating.slice(0,2) !== 'AA' ){
 							leftRoom = maxAandBelow - allocRating['aAndBelow'];
 							if( allocationLimit > leftRoom ){
 								allocationLimit = leftRoom;
@@ -994,7 +1002,8 @@ class App extends Component {
 
 						if( minIncrementToAllocate > 0 && minIncrementToAllocate <= allocationLimit ){
 							bucket[bucketLength].investAmt = allocatedCash - minIncrementToAllocate;
-							testBond.investAmt = 0 +  minIncrementToAllocate;
+							testBond.investAmt = 0 + minIncrementToAllocate;
+							
 							if( testBond.state === 'NY' ) allocState['NY'] += minIncrementToAllocate;
 							if( testBond.state === 'CA' ) allocState['CA'] += minIncrementToAllocate;
 							if( testBond.rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] += minIncrementToAllocate;
@@ -1003,11 +1012,13 @@ class App extends Component {
 							allocSector.Cash += bucket[bucketLength].investAmt;
 							allocatedCash = bucket[bucketLength].investAmt;
 							allocatedData[bucketNumber].splice(bucketLength, 0, testBond);
+							bucketLength++;
 						}
 						bondIndex++;
 					}
 					rankIndex++;
 					bondIndex = 0;
+
 				}while( rankIndex < ranking.length )
 				rankIndex = 0;
 			}
@@ -1088,7 +1099,7 @@ class App extends Component {
 		let lenBucket = [];
 		let bucketsByRows = [];
 		let maxBondsInBucket = 0;
-		let rowsPerBond = 3;
+		let rowsPerBond = 4;
 		let bond = {};
 		let row = {};
 		let totalByBucket = {};
@@ -1118,18 +1129,20 @@ class App extends Component {
 					if( bond ){
 						if( j === 0 ){
 							if( bond.cusip === 'Cash' ){
-								row[(k).toString()] = bond.cusip;
+								row[(k).toString()] = bond.cusip + ': $' + bond.investAmt.toLocaleString();
 							}else{
-								row[(k).toString()] = bond.cusip + ', ' + bond.coupon + '%, ' + bond.ytm + 'yr, ' + bond.state;
+								row[(k).toString()] = bond.cusip + ', ' + bond.coupon + '%, ' + bond.maturity;
 							}
-						}else if( j === 1 ){
-							if( bond.cusip === 'Cash' ){
-								row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
+						}else if( j === 1 && bond.cusip !== 'Cash' ){
+							//if( bond.cusip === 'Cash' ){
+							//	row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
 
-							}else{
-								row[(k).toString()] = bond.sector + ', ' + bond.rating + ', ' + bond.price;
-							}
+						//	}else{
+								row[(k).toString()] = bond.state + ', ' + bond.sector + ', ' + bond.rating;
+						//	}
 						}else if( j === 2 && bond.cusip !== 'Cash' ){
+								row[(k).toString()] = bond.lastTraded + ', ' + bond.price;
+						}else if( j === 3 && bond.cusip !== 'Cash' ){
 							row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
 						}
 					}
@@ -1147,6 +1160,7 @@ class App extends Component {
 
    render() {
  	// console.log('.....in App.js, this.state',this.state)
+
     const munis = [...this.state.munis];
     return (
       <div className="container-fluid">

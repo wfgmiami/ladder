@@ -34,7 +34,7 @@ class AmountSlider extends React.Component {
 				<div>&nbsp;</div>
 				<div className="range-slider" >
 					<div>&nbsp;</div>
-					<input onInput={ (e) => this.sliderChange(e) } ref = { inputRange => this.inputRange = inputRange } className="range-slider__range" type="range" value={ this.state.investedAmount } min="250000" max="5000000" step="10000"/>
+					<input onInput={ (e) => this.sliderChange(e) } ref = { inputRange => this.inputRange = inputRange } className="range-slider__range" type="range" value={ this.state.investedAmount } min="250000" max="5000000" step="100000"/>
 				</div>
 				<div style={{ float: 'left' }}>
 					<button style={{ marginTop: '5px', marginBottom:'5px', marginLeft:'10px' }} onClick={ this.onGenerate } className="btn btn-primary" type="submit">Create Ladder</button>
