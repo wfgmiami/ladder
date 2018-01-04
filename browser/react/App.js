@@ -62,7 +62,9 @@ class App extends Component {
   }
 
   componentDidMount() {
-	this.setState({ munis: muniList } );
+	this.setState({ munis: muniList }, () => {
+		this.filterMaturity( { min: 1, max: 5 } );	   
+	});
   }
 	
   	handleMinAllocChange( minAlloc ){
