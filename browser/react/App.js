@@ -41,7 +41,8 @@ class App extends Component {
 			healthCare: 0,
 			aRatingAndBelow: 0,
 			sector:{},
-			ranking: ['HealthCare', 'nyMunis', 'caMunis', 'aRated', 'aaRated', 'couponRated']
+			ranking: ['HealthCare', 'nyMunis', 'caMunis', 'aRated', 'aaRated', 'couponRated'],
+			cashReducer: 'Yes'
 		};
 
 		this.filterMaturity = this.filterMaturity.bind(this);
@@ -56,11 +57,21 @@ class App extends Component {
 		this.allocateData = this.allocateData.bind(this);
 		this.handleLimit = this.handleLimit.bind(this);
 		this.allocateCash = this.allocateCash.bind(this);
+		this.handleMinAllocChange = this.handleMinAllocChange.bind(this);
+		this.handleCashReducerChange = this.handleCashReducerChange.bind(this);
   }
 
   componentDidMount() {
 	this.setState({ munis: muniList } );
   }
+	
+  	handleMinAllocChange( minAlloc ){
+		this.setState( { minAllocBond:  minAlloc } );
+	}
+
+	handleCashReducerChange( cashReducer ){
+		this.setState( { cashReducer:  cashReducer } );
+	}
 
 	filterMaturity( filter ){
 		let url = '/api/munis/filter';
@@ -334,7 +345,7 @@ class App extends Component {
 				allocSector[sector] -= amountToRemove;
 				allocBucket[bucket] -= amountToRemove;
 				adjustedBond['investAmt'] -= amountToRemove;
-				if( rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= amountToRemove;
+				if( adjustedBond.rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] -= amountToRemove;
 				argsObj.currentBucketState.amountAllocated -= amountToRemove;
 				minIncrementToAllocate = ( bucketMoney - allocBucket[bucket] ) / ( minIncrement * (  adjustedBond.price * 1 / 100 ) );
 				minIncrementToAllocate = Math.floor( minIncrementToAllocate ) * ( minIncrement *  adjustedBond.price * 1 / 100 );
@@ -721,9 +732,9 @@ class App extends Component {
 		console.log('Before the loop begins - muniData bucketState------', muniData, bucketState );
 
 		do{
-// debugger;
 			currentRankIndex = bucketState[bucket]['currentRankIndex'];
 			currentBondIndex = bucketState[bucket]['currentBondIndex'];
+			if(bucket===2 && currentBondIndex===47) debugger;
 
 			if( currentRankIndex < ranking.length ){
 
@@ -819,8 +830,9 @@ class App extends Component {
 			//numBuckets > 0
 		}while( numBuckets > 0 )
 
-
-		this.allocateCash( allocatedData, allocSector, allocRating, allocState );
+		console.log('.reducer',this.state.cashReducer);
+		if( this.state.cashReducer === 'Yes' )
+			this.allocateCash( allocatedData, allocSector, allocRating, allocState );
 
 
 		let fields = Object.keys( allocRating );
@@ -936,11 +948,11 @@ class App extends Component {
 				}
 			}
 
-			if( allocatedCash => 4000){
+			if( allocatedCash >= 4000){
 
 				do{
 					for( let i = 0; i <  munis[bucketNumber][ranking[rankIndex]].length; i++ ){
-						testBond = munis[bucketNumber][ranking[rankIndex]][bondIndex];
+						testBond = Object.assign( {}, munis[bucketNumber][ranking[rankIndex]][bondIndex] );
 						price = testBond.price;
 						sector = testBond.sector;
 						allocationLimit = maxSector - allocSector[sector];
@@ -982,7 +994,7 @@ class App extends Component {
 
 						if( minIncrementToAllocate > 0 && minIncrementToAllocate <= allocationLimit ){
 							bucket[bucketLength].investAmt = allocatedCash - minIncrementToAllocate;
-							testBond.investAmt += minIncrementToAllocate;
+							testBond.investAmt = 0 +  minIncrementToAllocate;
 							if( testBond.state === 'NY' ) allocState['NY'] += minIncrementToAllocate;
 							if( testBond.state === 'CA' ) allocState['CA'] += minIncrementToAllocate;
 							if( testBond.rating.slice(0,2) !== 'AA' ) allocRating['aAndBelow'] += minIncrementToAllocate;
@@ -990,6 +1002,7 @@ class App extends Component {
 							allocSector.Cash -= allocatedCash;
 							allocSector.Cash += bucket[bucketLength].investAmt;
 							allocatedCash = bucket[bucketLength].investAmt;
+							allocatedData[bucketNumber].splice(bucketLength, 0, testBond);
 						}
 						bondIndex++;
 					}
@@ -1137,8 +1150,8 @@ class App extends Component {
     const munis = [...this.state.munis];
     return (
       <div className="container-fluid">
-        <Nav filterMaturity = { this.filterMaturity } setLadder = { this.setLadder }/>
-          <div style={{ marginTop: '105px' }} className="row">
+        <Nav handleCashReducerChange = { this.handleCashReducerChange } handleMinAllocChange = { this.handleMinAllocChange } filterMaturity = { this.filterMaturity } setLadder = { this.setLadder }/>
+          <div style={{ marginTop: '135px' }} className="row">
 
 			{ this.state.bucketsByRows.length !== 0 ?
 				<div className="col-sm-8">
