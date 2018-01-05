@@ -660,6 +660,8 @@ class App extends Component {
 	checkBondForLimitSize( argsObj ){
 		let chosenBond = argsObj.chosenBond;
 		let allocatedAmount = 0;
+		let testRank = argsObj.currentBucketState.currentRankIndex;
+		const ranking = this.state.ranking;
 		const sector = chosenBond.sector;
 		const rating = chosenBond.rating;
 		const state = chosenBond.state;
@@ -669,10 +671,33 @@ class App extends Component {
 		const investedAmount = this.state.investedAmount;
 
 		if( minAllocBond * price / 100 > maxPercBond * investedAmount ){
-			// !!!!!!!!!!!!!!!!!!!!!before switching ranking keep checking with the rest of the bonds
-			argsObj = this.lookForBondInDiffRanking( argsObj )
-			console.log('Limit size - minAlloc*price > max perc * inv amt - chosen bond---', argsObj)
+			let bondIdx = 0;
+			let testPrice = 0;
+
+			do{
+				let bucketMunis = argsObj.muniBondInBucket[ranking[testRank]];
+				do{
+					testPrice = bucketMunis[bondIdx].price;
+					bondIdx++;	
+				}while( bondIdx <  bucketMunis.length && minAllocBond * testPrice / 100 > maxPercBond )
+
+				if( minAllocBond * testPrice / 100 > maxPercBond ){
+					argsObj.chosenBond = null;
+					argsObj = this.lookForBondInDiffRanking( argsObj );
+					if( !argsObj.chosenBond ){
+						return argsObj;
+					}
+					testRank = argsObj.currentBucketState.currentRankIndex;
+					bondIdx = 0;
+				}else{
+					argsObj.chosenBond = bucketMunis[--bondIdx];
+					return argsObj;
+				}
+
+			} while ( testRank < ranking.length )
+			argsObj.chosenBond = null;
 			return argsObj;
+				
 		}else if ( minAllocBond * price / 100 > argsObj.bucketMoney ) {
 			argsObj.chosenBond = null;
 			return argsObj;
@@ -745,7 +770,7 @@ class App extends Component {
 			currentRankIndex = bucketState[bucket]['currentRankIndex'];
 			currentBondIndex = bucketState[bucket]['currentBondIndex'];
 //			if(bucket===14 && currentBondIndex===0) debugger;
-
+			debugger;
 			if( currentRankIndex < ranking.length ){
 
 				chosenBond = muniData[bucket][ranking[currentRankIndex]][currentBondIndex];
@@ -760,10 +785,25 @@ class App extends Component {
 				if( chosenBond ){
 					argsObj = this.checkBondForLimitSize( argsObj );
 					console.log('chosenBond from diff ranking after look for Bond In Diff Ranking', argsObj.chosenBond)
-					this.allocateData( argsObj, allocatedData, allocBucket, allocSector, allocRating, allocState, bucketState, bucket )
-					//console.log("generateLadder after .......COMING FROM HEALTH CARE......bucket", bucket)
+					if( argsObj.chosenBond ){
+						this.allocateData( argsObj, allocatedData, allocBucket, allocSector, allocRating, allocState, bucketState, bucket )
+					}else{
+						cashObject = {};
+						cashObject['cusip'] = 'Cash';
+						cashObject['investAmt'] = bucketMoney;
+						allocSector['Cash'] += bucketMoney;
+
+						if( allocBucket[bucket] ){
+							cashObject['investAmt'] -= allocBucket[bucket];
+							allocSector['Cash'] -= allocBucket[bucket];
+						}
+
+						if( allocatedData[bucket] ) allocatedData[bucket].push( cashObject )
+						else allocatedData[bucket] = [cashObject];
+						idx = buckets.indexOf( bucket );
+						buckets.splice( idx, 1 );	
+					}			
 				}else{
-					// bucketsToRemove[bucket] = bucket;
 					cashObject = {};
 					cashObject['cusip'] = 'Cash';
 					cashObject['investAmt'] = bucketMoney;
@@ -777,9 +817,7 @@ class App extends Component {
 					if( allocatedData[bucket] ) allocatedData[bucket].push( cashObject )
 					else allocatedData[bucket] = [cashObject];
 					idx = buckets.indexOf( bucket );
-					buckets.splice( idx, 1 );
-
-				//	console.log('splicing.......in main sub- bucket, idx, buckets, bucketIdx, chosenBond --- ', bucket, idx, buckets, bucketIndex, chosenBond);
+					buckets.splice( idx, 1 );	
 				}
 
 			}else if( currentRankIndex < ranking.length ){
