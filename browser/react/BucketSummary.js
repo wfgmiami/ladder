@@ -6,7 +6,7 @@ class BucketSummary extends React.Component{
 		super(props);
 
 		this.state = {
-			portfolioSummary: []
+			bucketsSummary: []
 		}
 
 		this._columns = [
@@ -20,24 +20,24 @@ class BucketSummary extends React.Component{
 
 	componentWillMount(){
 		console.log('.....willMount this.props', this.props);
-		this.setState({ portfolioSummary: this.props.portfolioSummary });
+		this.setState({ bucketsSummary: this.props.bucketsSummary });
 	}
 
 	componentWillReceiveProps( nextProps ){
 		console.log('bucket allocation...next Props', nextProps);
-		if( nextProps.portfolioSummary !== this.state.portfolioSummary ){
-			this.setState( { portfolioSummary: nextProps.portfolioSummary } );
+		if( nextProps.bucketsSummary !== this.state.bucketsSummary ){
+			this.setState( { bucketsSummary: nextProps.bucketsSummary } );
 		}
 	}
 
 	rowGetter( i ){
-		return this.state.portfolioSummary[i];
+		return this.state.bucketsSummary[i];
 	}
 
 	render(){
 
-		const total = this.state.portfolioSummary.length;
-		const headerText = "PORTFOLIO SUMMARY";
+		const total = this.state.bucketsSummary.length;
+		const headerText = "ALLOCATION SUMMARY";
 	//	console.log('.....muni list', this.state.munis);
 		return (
 			<div className="panel panel-default"><div style = {{ textAlign: 'center' }}><b>{ headerText }</b></div>

@@ -8,6 +8,7 @@ import Constraint from './Constraint';
 import InvestedAmount from './InvestedAmount';
 import BucketAllocation from './BucketAllocation';
 import BucketSummary from './BucketSummary';
+import PortfolioSummary from './PortfolioSummary';
 import muniList from '../../muniData.json';
 import BucketSummaryPlaceholder from './BucketSummaryPlaceholder';
 import css from '../../assets/stylesheets/style.scss';
@@ -37,6 +38,7 @@ class App extends Component {
 			investedAmount: 1000000,
 			bucketsByRows: [],
 			columns: [],
+			bucketsSummary: [],
 			portfolioSummary: [],
 			healthCare: 0,
 			aRatingAndBelow: 0,
@@ -894,17 +896,17 @@ class App extends Component {
 		})
 
 		console.log('FINAL.....allocSector, allocatedData----', allocSector, allocatedData);
-		const portfolioSummary = this.createSummary( allocSector );
+		const bucketsSummary = this.createSummary( allocSector );
 		const bucketsByRows = this.createRows( allocatedData );
 		const columns = this.createColumns();
-		console.log('SET FOR SHOW.....summary,rows,columns', portfolioSummary, bucketsByRows, columns);
+		console.log('SET FOR SHOW.....summary,rows,columns', bucketsSummary, bucketsByRows, columns);
 
 		this.setState({ columns });
 		this.setState({ bucketsByRows });
 		this.setState({ allocatedData });
 		this.setState({ allocSector });
 		this.setState({ allocRating });
-		this.setState({ portfolioSummary });
+		this.setState({ bucketsSummary });
 
   }
 
@@ -1068,7 +1070,7 @@ class App extends Component {
 
 	createSummary( summary ){
 		let fields = Object.keys( summary );
-		let portfolioSummary = [];
+		let bucketsSummary = [];
 		let rowObj = {};
 		let arrangedPortfolioSummary = [];
 		const columnFields = [ 'portfolioSummary', 'dollarAllocated', 'percentageAllocated', 'rule' ];
@@ -1090,17 +1092,16 @@ class App extends Component {
 				rowObj[columnFields[3]] = '<= 20%';
 			}
 			if( rowObj[columnFields[1]] !== '$0' ){
-				portfolioSummary.push( rowObj );
+				bucketsSummary.push( rowObj );
 				rowObj = {};
 			}
 		})
 
-		arrangedPortfolioSummary = portfolioSummary.map( ( obj, index ) => {
+		arrangedPortfolioSummary = bucketsSummary.map( ( obj, index ) => {
 			let indexedObj = {};
 			let startIndex = 4;
-			const arrLen = portfolioSummary.length - 1;
+			const arrLen = bucketsSummary.length - 1;
 			indexedObj = Object.assign( obj, { index: index } );
-
 			if( obj.portfolioSummary === 'NY' ){
 				indexedObj = { id: 1, obj };
 			}else if( obj.portfolioSummary === 'CA' ){
@@ -1108,6 +1109,7 @@ class App extends Component {
 			}else if( obj.portfolioSummary === 'Health Care' ){
 				indexedObj = { id: 0, obj }
 			}else if( obj.portfolioSummary === 'aAndBelow' ){
+				obj.portfolioSummary = 'A Rated and Below';
 				indexedObj = { id: 3, obj }
 			}else if( obj.portfolioSummary === 'Cash' ){
 				indexedObj = { id: arrLen, obj }
@@ -1117,9 +1119,9 @@ class App extends Component {
 			return indexedObj;
 		})
 
-		console.log('..................', arrangedPortfolioSummary);
+		console.log('..................arrangedPortfolioSummary', arrangedPortfolioSummary);
 		arrangedPortfolioSummary.sort( function(a, b){ return a.id - b.id } );
-		return arrangedPortfolioSummary.map( obj => portfolioSummary[obj.obj.index] );
+		return arrangedPortfolioSummary.map( obj => bucketsSummary[obj.obj.index] );
 	}
 
 	createColumns(){
@@ -1134,8 +1136,11 @@ class App extends Component {
 	}
 
 	createRows( objBuckets ){
+
 		const buckets = Object.keys( objBuckets );
 		const numBuckets = buckets.length;
+		const portfolioSize = '$' + parseInt(this.state.investedAmount).toLocaleString();
+
 		let lenBucket = [];
 		let bucketsByRows = [];
 		let maxBondsInBucket = 0;
@@ -1145,11 +1150,22 @@ class App extends Component {
 		let totalByBucket = {};
 		let totalInBucket = 0;
 		let bucketIndex = buckets[0];
-		//console.log('.................', bucketIndex*1 + numBuckets);
+		let numBonds = 0;
+		let cashPosition = 0;
+		let avgEffDuration = 0;
+		let avgModDuration = 0;
+		let avgPrice = 0;
+		let avgCoupon = 0;
+		let avgYtw = 0;
+		let tdRange = [];
+		let portfolioSummary = [];
+		let minTdDate = 0;
+		let maxTdDate = 0;
+		let tradeDateRange = '';
+
 		buckets.forEach( bucket => {
-			//	for( let i = 0; i < numBuckets; i++ ){
-					lenBucket.push( objBuckets[bucket].length );
-			//	}
+				lenBucket.push( objBuckets[bucket].length );
+				numBonds += objBuckets[bucket].length;
 
 				for( let j = 0; j < objBuckets[bucket].length; j++ ){
 					totalInBucket += objBuckets[bucket][j].investAmt;
@@ -1159,31 +1175,35 @@ class App extends Component {
 		})
 
 		maxBondsInBucket = Math.max(...lenBucket);
-		console.log('.....totalByBucket,maxBondInBucket, rowsPerBond, bucketIndex, numBuckets', totalByBucket,maxBondsInBucket, rowsPerBond, bucketIndex, numBuckets, objBuckets);
+		console.log('.....totalByBucket,maxBondInBucket, rowsPerBond, bucketIndex, numBuckets, numBonds', totalByBucket,maxBondsInBucket, rowsPerBond, bucketIndex, numBuckets, objBuckets, numBonds);
 		for(let i = 0; i < maxBondsInBucket; i++){
 			for(let j = 0; j < rowsPerBond; j++){
 				for(let k = bucketIndex; k < numBuckets + bucketIndex*1; k++){
 
 					bond = objBuckets[k][i];
-
+	
 					if( bond ){
 						if( j === 0 ){
 							if( bond.cusip === 'Cash' ){
 								row[(k).toString()] = bond.cusip + ': $' + bond.investAmt.toLocaleString();
+								cashPosition += bond.investAmt;
 							}else{
 								row[(k).toString()] = bond.cusip + ', ' + bond.coupon + '%, ' + bond.maturity;
 							}
 						}else if( j === 1 && bond.cusip !== 'Cash' ){
-							//if( bond.cusip === 'Cash' ){
-							//	row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
+							row[(k).toString()] = bond.state + ', ' + bond.sector + ', ' + bond.rating;
 
-						//	}else{
-								row[(k).toString()] = bond.state + ', ' + bond.sector + ', ' + bond.rating;
-						//	}
+							avgEffDuration += bond.ed * bond.investAmt;
+							avgModDuration += bond.md * bond.investAmt;
+							avgYtw += bond.ytw * bond.investAmt;
+							avgPrice += bond.price * bond.investAmt;
+							avgCoupon += bond.coupon * bond.investAmt
+							tdRange.push( new Date ( bond.lastTraded ).getTime() );
 						}else if( j === 2 && bond.cusip !== 'Cash' ){
 								row[(k).toString()] = bond.lastTraded + ', ' + bond.price;
 						}else if( j === 3 && bond.cusip !== 'Cash' ){
-							row[(k).toString()] = '$' + bond.investAmt.toLocaleString();
+							let par = Number( (bond.investAmt / ( bond.price / 100 ) ).toFixed(0) ).toLocaleString();
+							row[(k).toString()] = '$' + bond.investAmt.toLocaleString() + ', ' + par;
 						}
 					}
 
@@ -1194,23 +1214,51 @@ class App extends Component {
 				}
 			}
 		}
+	
+		minTdDate = Math.min( ...tdRange );
+		maxTdDate = Math.max( ...tdRange );
+		minTdDate = new Date( minTdDate ).toLocaleString().split(',')[0];
+		maxTdDate = new Date( maxTdDate ).toLocaleString().split(',')[0];
+		if( minTdDate === 'Invalid Date' || maxTdDate === 'Invalid Date' ){
+			tradeDateRange = ''
+		}else{
+			tradeDateRange = minTdDate + ' - ' + maxTdDate;
+		}
+
+		avgEffDuration = Number( avgEffDuration / ( this.state.investedAmount - cashPosition ) ).toFixed(2);
+		if( isNaN( avgEffDuration ) ) avgEffDuration = '';
+		avgModDuration = Number( avgModDuration / ( this.state.investedAmount - cashPosition ) ).toFixed(2);
+		if( isNaN( avgModDuration ) ) avgModDuration = '';
+		avgYtw = Number( avgYtw / ( this.state.investedAmount - cashPosition ) ).toFixed(2);
+		if( isNaN( avgYtw ) ) avgYtw = '';
+		else avgYtw = avgYtw + '%';
+		avgCoupon = Number( avgCoupon / ( this.state.investedAmount - cashPosition ) ).toFixed(2);
+		if( isNaN( avgCoupon ) ) avgCoupon = '';
+		else avgCoupon = avgCoupon + '%';
+		avgPrice = Number( avgPrice / ( this.state.investedAmount - cashPosition ) ).toFixed(2);
+		if( isNaN( avgPrice ) ) avgPrice = '';
+		cashPosition = '$' +  Number(cashPosition.toFixed(2)).toLocaleString();
+
+		portfolioSummary.push( { avgPrice, avgCoupon, yieldToWorst: avgYtw, modifiedDuration: avgModDuration, effectiveDuration: avgEffDuration, cash: cashPosition, numberOfBonds: numBonds, portfolioSize, tradeDateRange } );
+		
+		this.setState( { portfolioSummary } );
 		bucketsByRows.push( totalByBucket );
 		return bucketsByRows;
 	}
 
    render() {
- 	// console.log('.....in App.js, this.state',this.state)
+ 	 console.log('.....in App.js, this.state',this.state)
 
     const munis = [...this.state.munis];
     return (
       <div className="container-fluid">
         <Nav handleCashReducerChange = { this.handleCashReducerChange } handleMinAllocChange = { this.handleMinAllocChange } filterMaturity = { this.filterMaturity } setLadder = { this.setLadder }/>
           <div style={{ marginTop: '135px' }} className="row">
-
+			<PortfolioSummary portfolioSummary = { this.state.portfolioSummary } />	
 			{ this.state.bucketsByRows.length !== 0 ?
 				<div className="col-sm-8">
 					<BucketAllocation columns = { this.state.columns } bucketsByRows = { this.state.bucketsByRows }/>
-					<BucketSummary portfolioSummary = { this.state.portfolioSummary } />
+					<BucketSummary bucketsSummary = { this.state.bucketsSummary } />
 					<div>&nbsp;</div>
 				</div>:
 				<div className="col-sm-8">

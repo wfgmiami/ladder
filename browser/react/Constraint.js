@@ -57,6 +57,11 @@ return (
 					4. Higher coupon
 				</td>
 			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td>5. Give preference to recent purchases</td>
+			</tr>
 	  </tbody>
 	</table>
 	</div>

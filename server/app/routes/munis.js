@@ -5,13 +5,13 @@ const fs = require('fs');
 module.exports = router;
 const currentYear = new Date().getFullYear();
 
- //const muniData = require( '../../../muniList.json');
- //const adjustedMuniData = createNewObject( muniData );
+//const muniData = require( '../../../muniList_0109.json');
+//const adjustedMuniData = createNewObject( muniData );
 
  //fs.writeFile( './muniData.json', JSON.stringify( adjustedMuniData ), 'utf-8', function( err ) {
- //	if ( err ) throw err;
- //	console.log('done')
- //})
+//	if ( err ) throw err;
+//	console.log('done')
+//})
 
 
 const adjustedMuniData = require( '../../../muniData.json');
@@ -61,7 +61,10 @@ function createNewObject(arr) {
 		dt = muni.LastTraded.split('/');
 		if (dt.length == 3 ) obj.lastTraded = dt[0] + '/' + dt[1] + '/' + dt[2].slice(-2);
 		else obj.lastTraded = '';
-		munis.push(obj)
+		obj.ed = muni.EffectiveDuration;
+		obj.md = muni.ModifiedDuration;
+		obj.ytw = muni.YieldToWorst;
+		munis.push(obj);
 		obj= {};
 	})
 
